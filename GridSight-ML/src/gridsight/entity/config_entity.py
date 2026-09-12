@@ -27,3 +27,21 @@ class ModelTrainerConfig:
 @dataclass
 class ModelEvaluationConfig:
     evaluation_file_path: Path
+    
+
+@dataclass
+class ModelTuningConfig:
+
+    n_trials: int
+
+    tuned_model_path: str
+
+    best_params_path: str
+
+    study_path: str
+
+
+@dataclass
+class TunedModelEvaluationConfig:
+
+    tuned_metrics_path: str

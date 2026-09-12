@@ -7,6 +7,8 @@ from gridsight.entity.config_entity import (
     DataTransformationConfig,
     ModelTrainerConfig,
     ModelEvaluationConfig,
+    ModelTuningConfig,
+    TunedModelEvaluationConfig,
 )
 
 
@@ -60,4 +62,27 @@ class ConfigurationManager:
             evaluation_file_path=Path(
                 "artifacts/model_evaluation/metrics.json"
             )
+        )
+
+    def get_model_tuning_config(self):
+
+        config = self.config["model_tuning"]
+
+        return ModelTuningConfig(
+            n_trials=config["n_trials"],
+            tuned_model_path=config["tuned_model_path"],
+            best_params_path=config["best_params_path"],
+            study_path=config["study_path"]
+        )
+
+    def get_tuned_model_evaluation_config(self):
+
+        config = self.config[
+            "tuned_model_evaluation"
+        ]
+
+        return TunedModelEvaluationConfig(
+            tuned_metrics_path=config[
+                "tuned_metrics_path"
+            ]
         )

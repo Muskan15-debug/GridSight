@@ -17,3 +17,12 @@ model:
 
 training:
   test_size: 0.2
+
+model_tuning:
+  n_trials: 30
+  tuned_model_path: artifacts/hyperparameter_tuning/best_model.pkl
+  best_params_path: artifacts/hyperparameter_tuning/best_params.json
+  study_path: artifacts/hyperparameter_tuning/optuna_trials.csv
+
+tuned_model_evaluation:
+  tuned_metrics_path: artifacts/tuned_model_evaluation/metrics.json
