@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, EmailStr, Field
 
 
@@ -82,3 +84,30 @@ class UpdateProfileRequest(BaseModel):
     address: str | None = None
     notification_email: bool | None = None
     notification_push: bool | None = None
+
+
+# class AlertRuleCreate(BaseModel):
+#     threshold_kw: float = Field(ge=0)
+#     comparison: Literal["below", "above"] = "below"
+#     enabled: bool = True
+
+
+# class AlertRuleOut(BaseModel):
+#     id: str
+#     threshold_kw: float
+#     comparison: str
+#     enabled: bool
+#     created_at: str
+
+
+# class AlertLogEntryOut(BaseModel):
+#     id: str
+#     type: Literal["threshold", "anomaly"]
+#     rule_id: str | None = None
+#     anomaly_type: str | None = None
+#     severity: str
+#     title: str
+#     message: str
+#     hour: str | None = None
+#     forecast_id: str | None = None
+#     triggered_at: str
