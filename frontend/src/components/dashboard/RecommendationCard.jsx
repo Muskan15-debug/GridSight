@@ -1,25 +1,21 @@
 const ACTION_CONFIG = {
   charge_storage: {
-    borderClass: "border-success",
-    textClass: "text-success",
+    borderColor: "#10B981",
     figureKey: "surplus_kwh",
     figureLabel: "Surplus",
   },
   export_or_curtail: {
-    borderClass: "border-info",
-    textClass: "text-info",
+    borderColor: "#3B82F6",
     figureKey: "excess_kwh",
     figureLabel: "Excess",
   },
   draw_from_storage: {
-    borderClass: "border-warning",
-    textClass: "text-warning",
+    borderColor: "#F59E0B",
     figureKey: "deficit_kwh",
     figureLabel: "Deficit",
   },
   draw_from_grid: {
-    borderClass: "border-danger",
-    textClass: "text-danger",
+    borderColor: "#EF4444",
     figureKey: "grid_kwh_needed",
     figureLabel: "Grid needed",
   },
@@ -28,19 +24,32 @@ const ACTION_CONFIG = {
 export default function RecommendationCard({ recommendation }) {
   if (!recommendation) return null;
 
-  const config = ACTION_CONFIG[recommendation.action] ?? {
-    borderClass: "border-border",
-    textClass: "text-text-primary",
-  };
+  const config = ACTION_CONFIG[recommendation.action] ?? { borderColor: "#334155" };
   const figureValue = config.figureKey ? recommendation[config.figureKey] : undefined;
 
   return (
-    <div className={`rounded-xl border-l-4 ${config.borderClass} border-y border-r border-border bg-card p-6`}>
-      <p className={`text-sm font-medium ${config.textClass}`}>{recommendation.title}</p>
-      <p className="mt-2 text-text-primary">{recommendation.message}</p>
+    <div
+      className="rounded-xl bg-card p-6"
+      style={{ borderLeft: `3px solid ${config.borderColor}` }}
+    >
+      <p
+        className="text-text-primary"
+        style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "1.1rem", fontWeight: 600 }}
+      >
+        {recommendation.title}
+      </p>
+      <p className="mt-2 text-sm" style={{ color: "#94A3B8" }}>
+        {recommendation.message}
+      </p>
       {figureValue !== undefined && (
-        <p className="mt-3 text-xl font-bold text-text-primary">
-          {figureValue} kWh <span className="text-sm font-normal text-text-secondary">{config.figureLabel}</span>
+        <p
+          className="mt-4 text-text-primary"
+          style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "2rem", fontWeight: 700 }}
+        >
+          {figureValue} kWh{" "}
+          <span className="text-sm font-normal" style={{ color: "#94A3B8" }}>
+            {config.figureLabel}
+          </span>
         </p>
       )}
     </div>

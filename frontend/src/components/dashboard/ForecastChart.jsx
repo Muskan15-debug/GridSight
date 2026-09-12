@@ -28,7 +28,7 @@ export default function ForecastChart({ forecast, noForecast }) {
     if (!forecast?.hourly?.length || !width) return;
 
     const hourly = forecast.hourly;
-    const height = 320;
+    const height = 380;
     const innerWidth = width - MARGIN.left - MARGIN.right;
     const innerHeight = height - MARGIN.top - MARGIN.bottom;
 
@@ -191,18 +191,14 @@ export default function ForecastChart({ forecast, noForecast }) {
 
   if (!forecast || noForecast) return null;
 
-  const generatedAt = forecast.generated_at
-    ? new Date(forecast.generated_at).toLocaleString()
-    : null;
-
   return (
     <div className="rounded-xl border border-border bg-card p-6">
-      <div className="mb-2 flex items-baseline justify-between">
-        <p className="text-sm text-text-secondary">72-Hour Forecast</p>
-        {generatedAt && (
-          <p className="text-xs text-text-secondary">Updated {generatedAt}</p>
-        )}
-      </div>
+      <p
+        className="mb-2 text-text-primary"
+        style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "1.1rem", fontWeight: 600 }}
+      >
+        72-Hour Forecast
+      </p>
       <div ref={containerRef} className="relative w-full">
         <svg ref={svgRef} style={{ background: "transparent" }} />
         <div

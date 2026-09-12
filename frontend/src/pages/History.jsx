@@ -4,6 +4,25 @@ import LoadingSpinner from "../components/common/LoadingSpinner";
 import HistoryChart from "../components/history/HistoryChart";
 import api from "../services/api";
 
+function SummaryCard({ label, value, prefixColor }) {
+  return (
+    <div className="rounded-xl border border-border p-6">
+      <p
+        className="text-text-primary"
+        style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "2.5rem", fontWeight: 700, lineHeight: 1 }}
+      >
+        {prefixColor && (
+          <span style={{ color: prefixColor }}>{value.prefix}</span>
+        )}
+        {value.number}
+      </p>
+      <p className="mt-2 uppercase text-text-secondary" style={{ fontSize: "0.8rem" }}>
+        {label}
+      </p>
+    </div>
+  );
+}
+
 export default function History() {
   const [dailySummary, setDailySummary] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,28 +70,25 @@ export default function History() {
       {!loading && !error && dailySummary.length > 0 && (
         <>
           <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className="rounded-xl border border-border bg-card p-6">
-              <p className="text-sm text-text-secondary">Total Predicted</p>
-              <p className="mt-1 text-2xl font-bold text-primary">
-                {totalGenerated.toFixed(1)} kWh
-              </p>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-6">
-              <p className="text-sm text-text-secondary">Total Demand</p>
-              <p className="mt-1 text-2xl font-bold text-info">{totalDemand.toFixed(1)} kWh</p>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-6">
-              <p className="text-sm text-text-secondary">Net Result</p>
-              <p className={`mt-1 text-2xl font-bold ${net >= 0 ? "text-success" : "text-danger"}`}>
-                {net >= 0 ? "+" : ""}
-                {net.toFixed(1)} kWh
-              </p>
-            </div>
+            <SummaryCard
+              label="Total Predicted"
+              value={{ number: `${totalGenerated.toFixed(1)} kWh` }}
+            />
+            <SummaryCard
+              label="Total Demand"
+              value={{ number: `${totalDemand.toFixed(1)} kWh` }}
+            />
+            <SummaryCard
+              label="Net Result"
+              value={{
+                prefix: net >= 0 ? "+" : "−",
+                number: `${Math.abs(net).toFixed(1)} kWh`,
+              }}
+              prefixColor={net >= 0 ? "#10B981" : "#EF4444"}
+            />
           </div>
 
-          <div className="rounded-xl border border-border bg-card p-6">
-            <HistoryChart dailySummary={dailySummary} />
-          </div>
+          <HistoryChart dailySummary={dailySummary} />
         </>
       )}
     </div>
