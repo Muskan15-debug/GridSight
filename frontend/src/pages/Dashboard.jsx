@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import CurrentPowerCard from "../components/dashboard/CurrentPowerCard";
+import ForecastChart from "../components/dashboard/ForecastChart";
 import RecommendationCard from "../components/dashboard/RecommendationCard";
 import RepredictModal from "../components/dashboard/RepredictModal";
 import WeatherGauges from "../components/dashboard/WeatherGauges";
@@ -95,6 +96,10 @@ export default function Dashboard() {
             </div>
           )}
           {!weatherLoading && !weatherError && weather && <WeatherGauges weather={weather} />}
+
+          <div className="md:col-span-2">
+            <ForecastChart forecast={forecast} noForecast={noForecast} />
+          </div>
 
           <div className="md:col-span-2">
             <RecommendationCard recommendation={recommendation} />
