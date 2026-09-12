@@ -83,38 +83,55 @@ export default function HistoryChart({ dailySummary }) {
       .attr("class", "day-group")
       .attr("transform", (d) => `translate(${x0(d.date)},0)`);
 
-    function showTooltip(event, d) {
+    function showTooltip(event, d, color) {
       tooltip
         .style("display", "block")
         .style("left", `${event.clientX + 12}px`)
         .style("top", `${event.clientY - 32}px`)
+        .style("transform", "scale(1)")
+        .style("opacity", "1")
         .html(
           `${formatDate(parseDate(d.date))}<br/>Predicted: ${d.total_kwh.toFixed(2)} kWh<br/>Demand: ${(d.demand_kwh ?? 0).toFixed(2)} kWh`
         );
+      d3.select(event.currentTarget).transition().duration(120).attr("fill", color);
     }
-    function hideTooltip() {
-      tooltip.style("display", "none");
+    function hideTooltip(event, baseColor) {
+      tooltip.style("transform", "scale(0.95)").style("opacity", "0");
+      setTimeout(() => tooltip.style("display", "none"), 120);
+      d3.select(event.currentTarget).transition().duration(120).attr("fill", baseColor);
     }
 
     dayGroups
       .append("rect")
       .attr("x", x1("generation"))
       .attr("width", x1.bandwidth())
-      .attr("y", (d) => yScale(d.total_kwh))
-      .attr("height", (d) => innerHeight - yScale(d.total_kwh))
+      .attr("y", innerHeight)
+      .attr("height", 0)
       .attr("fill", AMBER)
-      .on("mousemove", showTooltip)
-      .on("mouseleave", hideTooltip);
+      .on("mousemove", (event, d) => showTooltip(event, d, "#FCD34D"))
+      .on("mouseleave", (event) => hideTooltip(event, AMBER))
+      .transition()
+      .duration(700)
+      .ease(d3.easeCubicOut)
+      .delay((_, i) => i * 40)
+      .attr("y", (d) => yScale(d.total_kwh))
+      .attr("height", (d) => innerHeight - yScale(d.total_kwh));
 
     dayGroups
       .append("rect")
       .attr("x", x1("demand"))
       .attr("width", x1.bandwidth())
-      .attr("y", (d) => yScale(d.demand_kwh ?? 0))
-      .attr("height", (d) => innerHeight - yScale(d.demand_kwh ?? 0))
+      .attr("y", innerHeight)
+      .attr("height", 0)
       .attr("fill", BLUE)
-      .on("mousemove", showTooltip)
-      .on("mouseleave", hideTooltip);
+      .on("mousemove", (event, d) => showTooltip(event, d, "#60A5FA"))
+      .on("mouseleave", (event) => hideTooltip(event, BLUE))
+      .transition()
+      .duration(700)
+      .ease(d3.easeCubicOut)
+      .delay((_, i) => i * 40 + 60)
+      .attr("y", (d) => yScale(d.demand_kwh ?? 0))
+      .attr("height", (d) => innerHeight - yScale(d.demand_kwh ?? 0));
   }, [dailySummary, width]);
 
   return (
@@ -133,8 +150,8 @@ export default function HistoryChart({ dailySummary }) {
         <svg ref={svgRef} style={{ background: "transparent" }} />
         <div
           ref={tooltipRef}
-          className="pointer-events-none fixed z-50 rounded-md border border-border bg-card px-2 py-1 text-xs text-text-primary shadow-lg"
-          style={{ display: "none" }}
+          className="glass-card pointer-events-none fixed z-50 rounded-md px-2 py-1 text-xs text-text-primary"
+          style={{ display: "none", transform: "scale(0.95)", opacity: 0, transition: "transform 0.15s ease, opacity 0.15s ease" }}
         />
       </div>
     </div>

@@ -1,5 +1,8 @@
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import GlowButton from "../components/common/GlowButton";
+import LocationPicker from "../components/common/LocationPicker";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
@@ -17,10 +20,14 @@ export default function Onboarding() {
   const navigate = useNavigate();
   const { user, loading, updateUser } = useAuth();
   const [step, setStep] = useState(0);
+  const [direction, setDirection] = useState(1);
   const [form, setForm] = useState({
     panel_area_sqm: "",
     panel_capacity_kw: "",
     address: "",
+    lat: null,
+    lon: null,
+    pickedDisplayName: null,
     daily_demand_kwh: "",
     storage_capacity_kwh: "",
     current_charge_kwh: "",
@@ -49,14 +56,34 @@ export default function Onboarding() {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
 
+  function handleLocationChange(value) {
+    if (value.mode === "coords") {
+      setForm((prev) => ({
+        ...prev,
+        address: "",
+        lat: value.lat,
+        lon: value.lon,
+        pickedDisplayName: value.display_name,
+      }));
+    } else {
+      setForm((prev) => ({
+        ...prev,
+        address: value.address,
+        lat: null,
+        lon: null,
+        pickedDisplayName: null,
+      }));
+    }
+  }
+
   function validateStep() {
     if (step === 0) {
       if (!form.panel_area_sqm || !form.panel_capacity_kw) {
         return "Fill in panel area and panel capacity.";
       }
     } else if (step === 1) {
-      if (!form.address) {
-        return "Enter your address.";
+      if (!form.address && (form.lat === null || form.lon === null)) {
+        return "Pick a location on the map or enter your address.";
       }
     } else if (step === 2) {
       if (!form.daily_demand_kwh) {
@@ -77,11 +104,13 @@ export default function Onboarding() {
       return;
     }
     setError("");
+    setDirection(1);
     setStep((s) => s + 1);
   }
 
   function handleBack() {
     setError("");
+    setDirection(-1);
     setStep((s) => s - 1);
   }
 
@@ -96,10 +125,15 @@ export default function Onboarding() {
     setError("");
     setSubmitting(true);
     try {
+      const locationPayload =
+        form.lat !== null && form.lon !== null
+          ? { lat: form.lat, lon: form.lon, display_name: form.pickedDisplayName }
+          : { address: form.address };
+
       const profileRes = await api.put("/api/v1/users/me", {
         panel_area_sqm: parseFloat(form.panel_area_sqm),
         panel_capacity_kw: parseFloat(form.panel_capacity_kw),
-        address: form.address,
+        ...locationPayload,
       });
 
       // These two also try to recompute the recommendation against the
@@ -148,8 +182,10 @@ export default function Onboarding() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
-      <div className="w-full max-w-md rounded-xl border border-border bg-card p-8 shadow-lg">
-        <h1 className="mb-2 text-2xl font-semibold text-text-primary">Set up your account</h1>
+      <div className="glass-card w-full max-w-md rounded-xl p-8">
+        <h1 className="mb-2 font-heading text-2xl font-semibold text-text-primary">
+          Set up your account
+        </h1>
 
         <div className="mb-6 flex items-center gap-2">
           {STEP_LABELS.map((label, i) => (
@@ -163,143 +199,136 @@ export default function Onboarding() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {step === 0 && (
-            <>
-              <div>
-                <label className={labelClass()} htmlFor="panel_area_sqm">
-                  Panel area (m²)
-                </label>
-                <input
-                  id="panel_area_sqm"
-                  type="number"
-                  min="0"
-                  step="any"
-                  className={inputClass()}
-                  value={form.panel_area_sqm}
-                  onChange={(e) => update("panel_area_sqm", e.target.value)}
-                />
-              </div>
-              <div>
-                <label className={labelClass()} htmlFor="panel_capacity_kw">
-                  Panel capacity (kW)
-                </label>
-                <input
-                  id="panel_capacity_kw"
-                  type="number"
-                  min="0"
-                  step="any"
-                  className={inputClass()}
-                  value={form.panel_capacity_kw}
-                  onChange={(e) => update("panel_capacity_kw", e.target.value)}
-                />
-              </div>
-            </>
-          )}
+          <div className="overflow-hidden">
+            <AnimatePresence mode="wait" custom={direction}>
+              <motion.div
+                key={step}
+                custom={direction}
+                initial={{ x: direction * 40, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -direction * 40, opacity: 0 }}
+                transition={{ duration: 0.25, ease: "easeInOut" }}
+                className="space-y-4"
+              >
+                {step === 0 && (
+                  <>
+                    <div>
+                      <label className={labelClass()} htmlFor="panel_area_sqm">
+                        Panel area (m²)
+                      </label>
+                      <input
+                        id="panel_area_sqm"
+                        type="number"
+                        min="0"
+                        step="any"
+                        className={inputClass()}
+                        value={form.panel_area_sqm}
+                        onChange={(e) => update("panel_area_sqm", e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass()} htmlFor="panel_capacity_kw">
+                        Panel capacity (kW)
+                      </label>
+                      <input
+                        id="panel_capacity_kw"
+                        type="number"
+                        min="0"
+                        step="any"
+                        className={inputClass()}
+                        value={form.panel_capacity_kw}
+                        onChange={(e) => update("panel_capacity_kw", e.target.value)}
+                      />
+                    </div>
+                  </>
+                )}
 
-          {step === 1 && (
-            <div>
-              <label className={labelClass()} htmlFor="address">
-                Address
-              </label>
-              <input
-                id="address"
-                type="text"
-                placeholder="City, region, country"
-                className={inputClass()}
-                value={form.address}
-                onChange={(e) => update("address", e.target.value)}
-              />
-              {user?.location?.display_name && (
-                <p className="mt-1 text-xs text-text-secondary">
-                  Currently resolved to: {user.location.display_name}
-                </p>
-              )}
-            </div>
-          )}
+                {step === 1 && (
+                  <div>
+                    <label className={labelClass()}>Location</label>
+                    {user?.location?.display_name && (
+                      <p className="mb-2 text-xs text-text-secondary">
+                        Currently resolved to: {user.location.display_name}
+                      </p>
+                    )}
+                    <LocationPicker initialAddress={form.address} onChange={handleLocationChange} />
+                  </div>
+                )}
 
-          {step === 2 && (
-            <div>
-              <label className={labelClass()} htmlFor="daily_demand_kwh">
-                Average daily demand (kWh)
-              </label>
-              <input
-                id="daily_demand_kwh"
-                type="number"
-                min="0"
-                step="any"
-                className={inputClass()}
-                value={form.daily_demand_kwh}
-                onChange={(e) => update("daily_demand_kwh", e.target.value)}
-              />
-              <p className="mt-1 text-xs text-text-secondary">
-                Average electricity your home or facility uses per day. Editable anytime from
-                settings.
-              </p>
-            </div>
-          )}
+                {step === 2 && (
+                  <div>
+                    <label className={labelClass()} htmlFor="daily_demand_kwh">
+                      Average daily demand (kWh)
+                    </label>
+                    <input
+                      id="daily_demand_kwh"
+                      type="number"
+                      min="0"
+                      step="any"
+                      className={inputClass()}
+                      value={form.daily_demand_kwh}
+                      onChange={(e) => update("daily_demand_kwh", e.target.value)}
+                    />
+                    <p className="mt-1 text-xs text-text-secondary">
+                      Average electricity your home or facility uses per day. Editable anytime
+                      from settings.
+                    </p>
+                  </div>
+                )}
 
-          {step === 3 && (
-            <>
-              <div>
-                <label className={labelClass()} htmlFor="storage_capacity_kwh">
-                  Battery storage capacity (kWh)
-                </label>
-                <input
-                  id="storage_capacity_kwh"
-                  type="number"
-                  min="0"
-                  step="any"
-                  className={inputClass()}
-                  value={form.storage_capacity_kwh}
-                  onChange={(e) => update("storage_capacity_kwh", e.target.value)}
-                />
-              </div>
-              <div>
-                <label className={labelClass()} htmlFor="current_charge_kwh">
-                  Current charge level (kWh)
-                </label>
-                <input
-                  id="current_charge_kwh"
-                  type="number"
-                  min="0"
-                  step="any"
-                  className={inputClass()}
-                  value={form.current_charge_kwh}
-                  onChange={(e) => update("current_charge_kwh", e.target.value)}
-                />
-              </div>
-            </>
-          )}
+                {step === 3 && (
+                  <>
+                    <div>
+                      <label className={labelClass()} htmlFor="storage_capacity_kwh">
+                        Battery storage capacity (kWh)
+                      </label>
+                      <input
+                        id="storage_capacity_kwh"
+                        type="number"
+                        min="0"
+                        step="any"
+                        className={inputClass()}
+                        value={form.storage_capacity_kwh}
+                        onChange={(e) => update("storage_capacity_kwh", e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass()} htmlFor="current_charge_kwh">
+                        Current charge level (kWh)
+                      </label>
+                      <input
+                        id="current_charge_kwh"
+                        type="number"
+                        min="0"
+                        step="any"
+                        className={inputClass()}
+                        value={form.current_charge_kwh}
+                        onChange={(e) => update("current_charge_kwh", e.target.value)}
+                      />
+                    </div>
+                  </>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
           {error && <p className="text-sm text-danger">{error}</p>}
 
           <div className="flex gap-3 pt-2">
             {step > 0 && (
-              <button
-                type="button"
-                onClick={handleBack}
-                className="flex-1 rounded-md border border-border py-2 font-medium text-text-primary transition hover:bg-background"
-              >
+              <GlowButton type="button" variant="secondary" onClick={handleBack} fullWidth>
                 Back
-              </button>
+              </GlowButton>
             )}
             {!isLastStep && (
-              <button
-                type="button"
-                onClick={handleNext}
-                className="flex-1 rounded-md bg-primary py-2 font-medium text-background transition hover:opacity-90"
-              >
+              <GlowButton type="button" onClick={handleNext} fullWidth>
                 Next
-              </button>
+              </GlowButton>
             )}
             {isLastStep && (
-              <button
-                type="submit"
-                disabled={submitting}
-                className="flex-1 rounded-md bg-primary py-2 font-medium text-background transition hover:opacity-90 disabled:opacity-50"
-              >
-                {submitting ? "Saving…" : "Finish setup"}
-              </button>
+              <GlowButton type="submit" loading={submitting} disabled={submitting} fullWidth>
+                Finish setup
+              </GlowButton>
             )}
           </div>
         </form>

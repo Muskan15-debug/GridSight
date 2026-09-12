@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.db import close_mongo_connection, connect_to_mongo, get_db
-from app.routers import auth, demand, forecast, history, storage, users, weather
+from app.routers import auth, demand, forecast, geocode, history, storage, users, weather
 from app.services.scheduler import start_scheduler, stop_scheduler
 
 
@@ -35,6 +35,7 @@ app.include_router(forecast.router)
 app.include_router(demand.router)
 app.include_router(storage.router)
 app.include_router(history.router)
+app.include_router(geocode.router)
 
 
 @app.get("/health")

@@ -1,6 +1,8 @@
 import { useState } from "react";
-import ErrorBanner from "../components/common/ErrorBanner";
+import GlowButton from "../components/common/GlowButton";
 import LoadingSpinner from "../components/common/LoadingSpinner";
+import LocationPicker from "../components/common/LocationPicker";
+import { useToast } from "../components/common/Toast";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
@@ -14,55 +16,52 @@ function labelClass() {
 
 function SectionCard({ title, children }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
-      <h2 className="mb-4 text-lg font-semibold text-text-primary">{title}</h2>
+    <div className="glass-card rounded-xl p-6">
+      <h2 className="mb-4 font-heading text-lg font-semibold text-text-primary">{title}</h2>
       {children}
     </div>
   );
 }
 
-function SaveButton({ saving, children = "Save" }) {
-  return (
-    <button
-      type="submit"
-      disabled={saving}
-      className="rounded-md bg-primary px-4 py-2 font-medium text-background transition hover:opacity-90 disabled:opacity-50"
-    >
-      {saving ? "Saving…" : children}
-    </button>
-  );
-}
+function useSaveFeedback() {
+  const { showToast } = useToast();
+  const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState(false);
 
-function SuccessNote({ show }) {
-  if (!show) return null;
-  return <p className="mt-2 text-sm text-success">Saved.</p>;
+  async function run(action, successMessage) {
+    setSaving(true);
+    try {
+      await action();
+      setSaving(false);
+      setSuccess(true);
+      showToast(successMessage, "success");
+      setTimeout(() => setSuccess(false), 1200);
+      return true;
+    } catch (err) {
+      setSaving(false);
+      const detail = err.response?.data?.detail;
+      showToast(typeof detail === "string" ? detail : "Something went wrong. Please try again.", "error");
+      return false;
+    }
+  }
+
+  return { saving, success, run };
 }
 
 function PanelInfoSection({ user, updateUser }) {
   const [panelAreaSqm, setPanelAreaSqm] = useState(user.panel?.area_sqm ?? "");
   const [panelCapacityKw, setPanelCapacityKw] = useState(user.panel?.capacity_kw ?? "");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [saved, setSaved] = useState(false);
+  const { saving, success, run } = useSaveFeedback();
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError("");
-    setSaved(false);
-    setSaving(true);
-    try {
+    await run(async () => {
       const res = await api.put("/api/v1/users/me", {
         panel_area_sqm: parseFloat(panelAreaSqm),
         panel_capacity_kw: parseFloat(panelCapacityKw),
       });
       updateUser({ panel: res.data.panel });
-      setSaved(true);
-    } catch (err) {
-      const detail = err.response?.data?.detail;
-      setError(typeof detail === "string" ? detail : "Failed to save panel info.");
-    } finally {
-      setSaving(false);
-    }
+    }, "Panel info saved.");
   }
 
   return (
@@ -96,9 +95,9 @@ function PanelInfoSection({ user, updateUser }) {
             onChange={(e) => setPanelCapacityKw(e.target.value)}
           />
         </div>
-        <ErrorBanner message={error} onDismiss={() => setError("")} />
-        <SaveButton saving={saving} />
-        <SuccessNote show={saved} />
+        <GlowButton type="submit" loading={saving} success={success} disabled={saving || success}>
+          Save
+        </GlowButton>
       </form>
     </SectionCard>
   );
@@ -108,16 +107,11 @@ function EnergySettingsSection({ user, updateUser }) {
   const [demandKwh, setDemandKwh] = useState(user.demand?.default_daily_kwh ?? "");
   const [storageCapacityKwh, setStorageCapacityKwh] = useState(user.storage?.capacity_kwh ?? "");
   const [currentChargeKwh, setCurrentChargeKwh] = useState(user.storage?.current_charge_kwh ?? "");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [saved, setSaved] = useState(false);
+  const { saving, success, run } = useSaveFeedback();
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError("");
-    setSaved(false);
-    setSaving(true);
-    try {
+    await run(async () => {
       const demandValue = parseFloat(demandKwh);
       const storageCapacityValue = parseFloat(storageCapacityKwh);
       const currentChargeValue = parseFloat(currentChargeKwh);
@@ -147,13 +141,7 @@ function EnergySettingsSection({ user, updateUser }) {
           current_charge_kwh: currentChargeValue,
         },
       });
-      setSaved(true);
-    } catch (err) {
-      const detail = err.response?.data?.detail;
-      setError(typeof detail === "string" ? detail : "Failed to save energy settings.");
-    } finally {
-      setSaving(false);
-    }
+    }, "Energy settings saved.");
   }
 
   return (
@@ -204,9 +192,9 @@ function EnergySettingsSection({ user, updateUser }) {
         <p className="text-xs text-text-secondary">
           Updating these values will automatically recalculate your recommendation.
         </p>
-        <ErrorBanner message={error} onDismiss={() => setError("")} />
-        <SaveButton saving={saving} />
-        <SuccessNote show={saved} />
+        <GlowButton type="submit" loading={saving} success={success} disabled={saving || success}>
+          Save
+        </GlowButton>
       </form>
     </SectionCard>
   );
@@ -215,32 +203,24 @@ function EnergySettingsSection({ user, updateUser }) {
 function ChangePasswordSection() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [saved, setSaved] = useState(false);
+  const { showToast } = useToast();
+  const { saving, success, run } = useSaveFeedback();
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError("");
-    setSaved(false);
     if (newPassword.length < 8) {
-      setError("New password must be at least 8 characters.");
+      showToast("New password must be at least 8 characters.", "error");
       return;
     }
-    setSaving(true);
-    try {
+    const ok = await run(async () => {
       await api.put("/api/v1/auth/password", {
         current_password: currentPassword,
         new_password: newPassword,
       });
+    }, "Password changed.");
+    if (ok) {
       setCurrentPassword("");
       setNewPassword("");
-      setSaved(true);
-    } catch (err) {
-      const detail = err.response?.data?.detail;
-      setError(typeof detail === "string" ? detail : "Failed to change password.");
-    } finally {
-      setSaving(false);
     }
   }
 
@@ -267,9 +247,9 @@ function ChangePasswordSection() {
             onChange={(e) => setNewPassword(e.target.value)}
           />
         </div>
-        <ErrorBanner message={error} onDismiss={() => setError("")} />
-        <SaveButton saving={saving}>Change password</SaveButton>
-        <SuccessNote show={saved} />
+        <GlowButton type="submit" loading={saving} success={success} disabled={saving || success}>
+          Change password
+        </GlowButton>
       </form>
     </SectionCard>
   );
@@ -277,27 +257,20 @@ function ChangePasswordSection() {
 
 function AccountSection({ user, updateUser }) {
   const [changingLocation, setChangingLocation] = useState(false);
-  const [address, setAddress] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [saved, setSaved] = useState(false);
+  const [location, setLocation] = useState({ mode: "address", address: "" });
+  const { saving, success, run } = useSaveFeedback();
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError("");
-    setSaved(false);
-    setSaving(true);
-    try {
-      const res = await api.put("/api/v1/users/me", { address });
+    const ok = await run(async () => {
+      const payload =
+        location.mode === "coords"
+          ? { lat: location.lat, lon: location.lon, display_name: location.display_name }
+          : { address: location.address };
+      const res = await api.put("/api/v1/users/me", payload);
       updateUser({ location: res.data.location });
-      setSaved(true);
-      setChangingLocation(false);
-    } catch (err) {
-      const detail = err.response?.data?.detail;
-      setError(typeof detail === "string" ? detail : "Failed to update location.");
-    } finally {
-      setSaving(false);
-    }
+    }, "Location updated.");
+    if (ok) setChangingLocation(false);
   }
 
   return (
@@ -316,9 +289,8 @@ function AccountSection({ user, updateUser }) {
               <button
                 type="button"
                 onClick={() => {
-                  setAddress(user.location?.display_name ?? "");
+                  setLocation({ mode: "address", address: user.location?.display_name ?? "" });
                   setChangingLocation(true);
-                  setSaved(false);
                 }}
                 className="text-sm text-primary hover:underline"
               >
@@ -329,31 +301,27 @@ function AccountSection({ user, updateUser }) {
 
           {changingLocation && (
             <form onSubmit={handleSubmit} className="mt-2 space-y-3">
-              <input
-                type="text"
-                className={inputClass()}
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="City, region, country"
+              <LocationPicker
+                initialAddress={user.location?.display_name ?? ""}
+                onChange={(value) => setLocation(value)}
               />
-              <ErrorBanner message={error} onDismiss={() => setError("")} />
               <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setChangingLocation(false)}
-                  className="flex-1 rounded-md border border-border py-2 font-medium text-text-primary transition hover:bg-background"
-                >
+                <GlowButton type="button" variant="secondary" onClick={() => setChangingLocation(false)} fullWidth>
                   Cancel
-                </button>
-                <div className="flex-1">
-                  <SaveButton saving={saving} />
-                </div>
+                </GlowButton>
+                <GlowButton
+                  type="submit"
+                  loading={saving}
+                  success={success}
+                  disabled={saving || success}
+                  fullWidth
+                >
+                  Save
+                </GlowButton>
               </div>
             </form>
           )}
         </div>
-
-        <SuccessNote show={saved && !changingLocation} />
       </div>
     </SectionCard>
   );
@@ -368,7 +336,7 @@ export default function Settings() {
 
   return (
     <div className="space-y-6 p-6 text-text-primary">
-      <h1 className="text-2xl font-semibold">Settings</h1>
+      <h1 className="font-heading text-2xl font-semibold">Settings</h1>
       <PanelInfoSection user={user} updateUser={updateUser} />
       <EnergySettingsSection user={user} updateUser={updateUser} />
       <ChangePasswordSection />

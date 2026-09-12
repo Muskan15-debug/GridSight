@@ -87,8 +87,20 @@ class UpdateProfileRequest(BaseModel):
     panel_area_sqm: float | None = Field(default=None, gt=0)
     panel_capacity_kw: float | None = Field(default=None, gt=0)
     address: str | None = None
+    lat: float | None = Field(default=None, ge=-90, le=90)
+    lon: float | None = Field(default=None, ge=-180, le=180)
+    display_name: str | None = None
     notification_email: bool | None = None
     notification_push: bool | None = None
+
+
+class ReverseGeocodeRequest(BaseModel):
+    lat: float = Field(ge=-90, le=90)
+    lon: float = Field(ge=-180, le=180)
+
+
+class ReverseGeocodeResponse(BaseModel):
+    display_name: str
 
 
 # class AlertRuleCreate(BaseModel):

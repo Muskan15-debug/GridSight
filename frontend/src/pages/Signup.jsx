@@ -1,5 +1,7 @@
+import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import GlowButton from "../components/common/GlowButton";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
@@ -28,6 +30,7 @@ export default function Signup() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [step, setStep] = useState(0);
+  const [direction, setDirection] = useState(1);
   const [form, setForm] = useState(initialForm);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -64,11 +67,13 @@ export default function Signup() {
       return;
     }
     setError("");
+    setDirection(1);
     setStep((s) => s + 1);
   }
 
   function handleBack() {
     setError("");
+    setDirection(-1);
     setStep((s) => s - 1);
   }
 
@@ -111,8 +116,10 @@ export default function Signup() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
-      <div className="w-full max-w-md rounded-xl border border-border bg-card p-8 shadow-lg">
-        <h1 className="mb-2 text-2xl font-semibold text-text-primary">Create your account</h1>
+      <div className="glass-card w-full max-w-md rounded-xl p-8">
+        <h1 className="mb-2 font-heading text-2xl font-semibold text-text-primary">
+          Create your account
+        </h1>
 
         <div className="mb-6 flex items-center gap-2">
           {STEP_LABELS.map((label, i) => (
@@ -126,163 +133,165 @@ export default function Signup() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {step === 0 && (
-            <>
-              <div>
-                <label className={labelClass()} htmlFor="email">
-                  Email
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  className={inputClass()}
-                  value={form.email}
-                  onChange={(e) => update("email", e.target.value)}
-                />
-              </div>
-              <div>
-                <label className={labelClass()} htmlFor="password">
-                  Password
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  className={inputClass()}
-                  value={form.password}
-                  onChange={(e) => update("password", e.target.value)}
-                />
-              </div>
-            </>
-          )}
+          <div className="overflow-hidden">
+            <AnimatePresence mode="wait" custom={direction}>
+              <motion.div
+                key={step}
+                custom={direction}
+                initial={{ x: direction * 40, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -direction * 40, opacity: 0 }}
+                transition={{ duration: 0.25, ease: "easeInOut" }}
+                className="space-y-4"
+              >
+                {step === 0 && (
+                  <>
+                    <div>
+                      <label className={labelClass()} htmlFor="email">
+                        Email
+                      </label>
+                      <input
+                        id="email"
+                        type="email"
+                        className={inputClass()}
+                        value={form.email}
+                        onChange={(e) => update("email", e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass()} htmlFor="password">
+                        Password
+                      </label>
+                      <input
+                        id="password"
+                        type="password"
+                        className={inputClass()}
+                        value={form.password}
+                        onChange={(e) => update("password", e.target.value)}
+                      />
+                    </div>
+                  </>
+                )}
 
-          {step === 1 && (
-            <>
-              <div>
-                <label className={labelClass()} htmlFor="panel_area_sqm">
-                  Panel area (m²)
-                </label>
-                <input
-                  id="panel_area_sqm"
-                  type="number"
-                  min="0"
-                  step="any"
-                  className={inputClass()}
-                  value={form.panel_area_sqm}
-                  onChange={(e) => update("panel_area_sqm", e.target.value)}
-                />
-              </div>
-              <div>
-                <label className={labelClass()} htmlFor="panel_capacity_kw">
-                  Panel capacity (kW)
-                </label>
-                <input
-                  id="panel_capacity_kw"
-                  type="number"
-                  min="0"
-                  step="any"
-                  className={inputClass()}
-                  value={form.panel_capacity_kw}
-                  onChange={(e) => update("panel_capacity_kw", e.target.value)}
-                />
-              </div>
-              <div>
-                <label className={labelClass()} htmlFor="address">
-                  Address
-                </label>
-                <input
-                  id="address"
-                  type="text"
-                  placeholder="City, region, country"
-                  className={inputClass()}
-                  value={form.address}
-                  onChange={(e) => update("address", e.target.value)}
-                />
-              </div>
-            </>
-          )}
+                {step === 1 && (
+                  <>
+                    <div>
+                      <label className={labelClass()} htmlFor="panel_area_sqm">
+                        Panel area (m²)
+                      </label>
+                      <input
+                        id="panel_area_sqm"
+                        type="number"
+                        min="0"
+                        step="any"
+                        className={inputClass()}
+                        value={form.panel_area_sqm}
+                        onChange={(e) => update("panel_area_sqm", e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass()} htmlFor="panel_capacity_kw">
+                        Panel capacity (kW)
+                      </label>
+                      <input
+                        id="panel_capacity_kw"
+                        type="number"
+                        min="0"
+                        step="any"
+                        className={inputClass()}
+                        value={form.panel_capacity_kw}
+                        onChange={(e) => update("panel_capacity_kw", e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass()} htmlFor="address">
+                        Address
+                      </label>
+                      <input
+                        id="address"
+                        type="text"
+                        placeholder="City, region, country"
+                        className={inputClass()}
+                        value={form.address}
+                        onChange={(e) => update("address", e.target.value)}
+                      />
+                    </div>
+                  </>
+                )}
 
-          {step === 2 && (
-            <div>
-              <label className={labelClass()} htmlFor="daily_demand_kwh">
-                Average daily demand (kWh)
-              </label>
-              <input
-                id="daily_demand_kwh"
-                type="number"
-                min="0"
-                step="any"
-                className={inputClass()}
-                value={form.daily_demand_kwh}
-                onChange={(e) => update("daily_demand_kwh", e.target.value)}
-              />
-              <p className="mt-1 text-xs text-text-secondary">
-                Average electricity your home or facility uses per day.
-              </p>
-            </div>
-          )}
+                {step === 2 && (
+                  <div>
+                    <label className={labelClass()} htmlFor="daily_demand_kwh">
+                      Average daily demand (kWh)
+                    </label>
+                    <input
+                      id="daily_demand_kwh"
+                      type="number"
+                      min="0"
+                      step="any"
+                      className={inputClass()}
+                      value={form.daily_demand_kwh}
+                      onChange={(e) => update("daily_demand_kwh", e.target.value)}
+                    />
+                    <p className="mt-1 text-xs text-text-secondary">
+                      Average electricity your home or facility uses per day.
+                    </p>
+                  </div>
+                )}
 
-          {step === 3 && (
-            <>
-              <div>
-                <label className={labelClass()} htmlFor="storage_capacity_kwh">
-                  Battery storage capacity (kWh)
-                </label>
-                <input
-                  id="storage_capacity_kwh"
-                  type="number"
-                  min="0"
-                  step="any"
-                  className={inputClass()}
-                  value={form.storage_capacity_kwh}
-                  onChange={(e) => update("storage_capacity_kwh", e.target.value)}
-                />
-              </div>
-              <div>
-                <label className={labelClass()} htmlFor="current_charge_kwh">
-                  Current charge level (kWh)
-                </label>
-                <input
-                  id="current_charge_kwh"
-                  type="number"
-                  min="0"
-                  step="any"
-                  className={inputClass()}
-                  value={form.current_charge_kwh}
-                  onChange={(e) => update("current_charge_kwh", e.target.value)}
-                />
-              </div>
-            </>
-          )}
+                {step === 3 && (
+                  <>
+                    <div>
+                      <label className={labelClass()} htmlFor="storage_capacity_kwh">
+                        Battery storage capacity (kWh)
+                      </label>
+                      <input
+                        id="storage_capacity_kwh"
+                        type="number"
+                        min="0"
+                        step="any"
+                        className={inputClass()}
+                        value={form.storage_capacity_kwh}
+                        onChange={(e) => update("storage_capacity_kwh", e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass()} htmlFor="current_charge_kwh">
+                        Current charge level (kWh)
+                      </label>
+                      <input
+                        id="current_charge_kwh"
+                        type="number"
+                        min="0"
+                        step="any"
+                        className={inputClass()}
+                        value={form.current_charge_kwh}
+                        onChange={(e) => update("current_charge_kwh", e.target.value)}
+                      />
+                    </div>
+                  </>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
           {error && <p className="text-sm text-danger">{error}</p>}
 
           <div className="flex gap-3 pt-2">
             {step > 0 && (
-              <button
-                type="button"
-                onClick={handleBack}
-                className="flex-1 rounded-md border border-border py-2 font-medium text-text-primary transition hover:bg-background"
-              >
+              <GlowButton type="button" variant="secondary" onClick={handleBack} fullWidth>
                 Back
-              </button>
+              </GlowButton>
             )}
             {!isLastStep && (
-              <button
-                type="button"
-                onClick={handleNext}
-                className="flex-1 rounded-md bg-primary py-2 font-medium text-background transition hover:opacity-90"
-              >
+              <GlowButton type="button" onClick={handleNext} fullWidth>
                 Next
-              </button>
+              </GlowButton>
             )}
             {isLastStep && (
-              <button
-                type="submit"
-                disabled={submitting}
-                className="flex-1 rounded-md bg-primary py-2 font-medium text-background transition hover:opacity-90 disabled:opacity-50"
-              >
-                {submitting ? "Creating account…" : "Create account"}
-              </button>
+              <GlowButton type="submit" loading={submitting} disabled={submitting} fullWidth>
+                Create account
+              </GlowButton>
             )}
           </div>
         </form>

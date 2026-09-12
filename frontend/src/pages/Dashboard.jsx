@@ -4,23 +4,23 @@ import ForecastChart from "../components/dashboard/ForecastChart";
 import RecommendationCard from "../components/dashboard/RecommendationCard";
 import RepredictModal from "../components/dashboard/RepredictModal";
 import WeatherGauges from "../components/dashboard/WeatherGauges";
-import ErrorBanner from "../components/common/ErrorBanner";
-import LoadingSpinner from "../components/common/LoadingSpinner";
+import GlowButton from "../components/common/GlowButton";
+import { DashboardSkeleton } from "../components/common/Skeleton";
+import { useToast } from "../components/common/Toast";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { showToast } = useToast();
 
   const [forecast, setForecast] = useState(null);
   const [recommendation, setRecommendation] = useState(null);
   const [noForecast, setNoForecast] = useState(false);
   const [forecastLoading, setForecastLoading] = useState(true);
-  const [forecastError, setForecastError] = useState("");
 
   const [weather, setWeather] = useState(null);
   const [weatherLoading, setWeatherLoading] = useState(true);
-  const [weatherError, setWeatherError] = useState("");
 
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -32,7 +32,6 @@ export default function Dashboard() {
     } else {
       setForecastLoading(true);
     }
-    setForecastError("");
     api
       .get("/api/v1/forecast/latest")
       .then((res) => {
@@ -44,7 +43,7 @@ export default function Dashboard() {
         if (err.response?.status === 404) {
           setNoForecast(true);
         } else {
-          setForecastError("Failed to load forecast.");
+          showToast("Failed to load forecast.", "error");
         }
       })
       .finally(() => {
@@ -62,9 +61,9 @@ export default function Dashboard() {
         params: { lat: user.location.lat, lon: user.location.lon },
       })
       .then((res) => setWeather(res.data))
-      .catch(() => setWeatherError("Failed to load current weather."))
+      .catch(() => showToast("Failed to load current weather.", "error"))
       .finally(() => setWeatherLoading(false));
-  }, [user]);
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleRepredictSuccess(newForecast, newRecommendation) {
     setForecast(newForecast);
@@ -72,31 +71,27 @@ export default function Dashboard() {
     setNoForecast(false);
   }
 
+  const initialLoading = forecastLoading || weatherLoading;
+
   return (
     <div className="p-6 text-text-primary">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Dashboard</h1>
+          <h1 className="font-heading text-2xl font-semibold">Dashboard</h1>
           {user?.location?.display_name && (
             <p className="text-sm text-text-secondary">📍 {user.location.display_name}</p>
           )}
         </div>
-        <button
-          type="button"
-          onClick={() => setModalOpen(true)}
-          className="rounded-md bg-primary px-4 py-2 font-medium text-background transition hover:opacity-90"
-        >
-          Re-predict
-        </button>
+        <GlowButton onClick={() => setModalOpen(true)}>Re-predict</GlowButton>
       </div>
 
-      {forecastLoading && <LoadingSpinner label="Loading forecast…" />}
-      {!forecastLoading && forecastError && <ErrorBanner message={forecastError} />}
-      {!forecastLoading && !forecastError && noForecast && (
+      {initialLoading && <DashboardSkeleton />}
+
+      {!initialLoading && noForecast && (
         <p className="text-text-secondary">No forecast yet — click Re-predict to generate one</p>
       )}
 
-      {!forecastLoading && !forecastError && !noForecast && forecast && (
+      {!initialLoading && !noForecast && forecast && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <CurrentPowerCard
             forecast={forecast}
@@ -105,25 +100,11 @@ export default function Dashboard() {
             onRefresh={() => fetchForecast({ silent: true })}
           />
 
-          {weatherLoading && (
-            <div className="rounded-xl border border-border bg-card p-6">
-              <LoadingSpinner label="Loading weather…" />
-            </div>
-          )}
-          {!weatherLoading && weatherError && (
-            <div className="rounded-xl border border-border bg-card p-6">
-              <ErrorBanner message={weatherError} />
-            </div>
-          )}
-          {!weatherLoading && !weatherError && weather && <WeatherGauges weather={weather} />}
+          {weather && <WeatherGauges weather={weather} />}
 
-          <div className="md:col-span-2">
-            <ForecastChart forecast={forecast} noForecast={noForecast} />
-          </div>
+          <ForecastChart forecast={forecast} noForecast={noForecast} />
 
-          <div className="md:col-span-2">
-            <RecommendationCard recommendation={recommendation} />
-          </div>
+          <RecommendationCard recommendation={recommendation} />
         </div>
       )}
 

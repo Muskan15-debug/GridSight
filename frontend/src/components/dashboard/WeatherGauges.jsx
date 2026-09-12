@@ -20,30 +20,39 @@ function GaugeArc({ label, value, unit, max }) {
   const strokeWidth = 10;
   const ratio = max > 0 ? Math.max(0, Math.min(1, value / max)) : 0;
 
-  const bgPath = describeArc(cx, cy, r, -90, 90);
-  const valuePath = describeArc(cx, cy, r, -90, -90 + ratio * 180);
+  const fullArcPath = describeArc(cx, cy, r, -90, 90);
+  const arcLength = Math.PI * r;
+  const dashOffset = arcLength * (1 - ratio);
 
   return (
     <div className="flex flex-col items-center">
-      <svg viewBox="0 0 120 70" className="w-28">
-        <path
-          d={bgPath}
-          fill="none"
-          stroke="#334155"
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
+      <div className="relative">
+        <div
+          className="pointer-events-none absolute inset-0 rounded-full blur-lg transition-opacity duration-700"
+          style={{ opacity: 0.15 + ratio * 0.45, backgroundColor: "#F59E0B" }}
+          aria-hidden="true"
         />
-        {ratio > 0 && (
+        <svg viewBox="0 0 120 70" className="relative w-28">
           <path
-            d={valuePath}
+            d={fullArcPath}
+            fill="none"
+            stroke="#334155"
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+          />
+          <path
+            d={fullArcPath}
             fill="none"
             stroke="#F59E0B"
             strokeWidth={strokeWidth}
             strokeLinecap="round"
+            strokeDasharray={arcLength}
+            strokeDashoffset={dashOffset}
+            style={{ transition: "stroke-dashoffset 0.7s ease" }}
           />
-        )}
-      </svg>
-      <span className="text-lg font-semibold text-text-primary">
+        </svg>
+      </div>
+      <span className="font-heading text-lg font-semibold text-text-primary">
         {Number(value).toFixed(1)}
         {unit}
       </span>
@@ -68,25 +77,21 @@ export default function WeatherGauges({ weather }) {
     : null;
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
-      <div className="mb-2 flex items-baseline justify-between">
+    <div className="md:col-span-2">
+      <div className="mb-2 flex items-baseline justify-between px-1">
         <p className="text-sm text-text-secondary">Weather</p>
         {updatedAt && (
           <p className="text-xs text-text-secondary">Updated {updatedAt}</p>
         )}
       </div>
-      <div className="flex flex-wrap justify-around gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {GAUGE_ORDER.map(({ key, label }) => {
           const gauge = weather.gauges[key];
           if (!gauge) return null;
           return (
-            <GaugeArc
-              key={key}
-              label={label}
-              value={gauge.value}
-              unit={gauge.unit}
-              max={gauge.max}
-            />
+            <div key={key} className="glass-card flex justify-center rounded-xl p-4">
+              <GaugeArc label={label} value={gauge.value} unit={gauge.unit} max={gauge.max} />
+            </div>
           );
         })}
       </div>

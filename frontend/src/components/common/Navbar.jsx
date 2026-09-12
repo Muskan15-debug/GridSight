@@ -11,9 +11,9 @@ export default function Navbar() {
   const { user, logout } = useAuth();
 
   return (
-    <nav className="flex items-center justify-between border-b border-border bg-card px-6 py-3">
+    <nav className="sticky top-0 z-40 flex items-center justify-between border-b border-border/50 bg-card/60 px-6 py-3 backdrop-blur-md">
       <div className="flex items-center gap-6">
-        <span className="font-semibold text-text-primary">GridSight</span>
+        <span className="font-heading font-semibold text-text-primary">GridSight</span>
         <div className="flex gap-4">
           {LINKS.map(({ to, label }) => (
             <NavLink

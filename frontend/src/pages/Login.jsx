@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import GlowButton from "../components/common/GlowButton";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
@@ -32,8 +33,10 @@ export default function Login() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-sm rounded-xl border border-border bg-card p-8 shadow-lg">
-        <h1 className="mb-6 text-2xl font-semibold text-text-primary">Log in to GridSight</h1>
+      <div className="glass-card w-full max-w-sm rounded-xl p-8">
+        <h1 className="mb-6 font-heading text-2xl font-semibold text-text-primary">
+          Log in to GridSight
+        </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -66,13 +69,9 @@ export default function Login() {
 
           {error && <p className="text-sm text-danger">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full rounded-md bg-primary py-2 font-medium text-background transition hover:opacity-90 disabled:opacity-50"
-          >
-            {submitting ? "Logging in…" : "Log in"}
-          </button>
+          <GlowButton type="submit" loading={submitting} disabled={submitting} fullWidth>
+            Log in
+          </GlowButton>
         </form>
 
         <p className="mt-6 text-center text-sm text-text-secondary">

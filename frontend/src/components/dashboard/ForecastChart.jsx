@@ -36,6 +36,17 @@ export default function ForecastChart({ forecast, noForecast }) {
     svg.selectAll("*").remove();
     svg.attr("width", width).attr("height", height);
 
+    const defs = svg.append("defs");
+    const gradient = defs
+      .append("linearGradient")
+      .attr("id", "forecast-area-gradient")
+      .attr("x1", "0")
+      .attr("x2", "0")
+      .attr("y1", "0")
+      .attr("y2", "1");
+    gradient.append("stop").attr("offset", "0%").attr("stop-color", AMBER).attr("stop-opacity", 0.35);
+    gradient.append("stop").attr("offset", "100%").attr("stop-color", AMBER).attr("stop-opacity", 0);
+
     const g = svg.append("g").attr("transform", `translate(${MARGIN.left},${MARGIN.top})`);
 
     const parsedData = hourly.map((d) => ({
@@ -123,27 +134,76 @@ export default function ForecastChart({ forecast, noForecast }) {
       }
     }
     const nowX = xScale(closest.timestamp);
+    const nowY = yScale(closest.kw);
     g.append("line")
       .attr("x1", nowX)
       .attr("x2", nowX)
       .attr("y1", 0)
       .attr("y2", innerHeight)
       .attr("stroke", AMBER)
-      .attr("stroke-width", 2);
+      .attr("stroke-width", 2)
+      .attr("stroke-opacity", 0.5);
 
-    // Line
+    // Area fill under the line
+    const area = d3
+      .area()
+      .x((d) => xScale(d.timestamp))
+      .y0(innerHeight)
+      .y1((d) => yScale(d.kw))
+      .curve(d3.curveMonotoneX);
+
+    g.append("path")
+      .datum(parsedData)
+      .attr("fill", "url(#forecast-area-gradient)")
+      .attr("d", area);
+
+    // Line — animated draw-in from left to right
     const line = d3
       .line()
       .x((d) => xScale(d.timestamp))
       .y((d) => yScale(d.kw))
       .curve(d3.curveMonotoneX);
 
-    g.append("path")
+    const linePath = g
+      .append("path")
       .datum(parsedData)
       .attr("fill", "none")
       .attr("stroke", AMBER)
       .attr("stroke-width", 2)
       .attr("d", line);
+
+    const totalLength = linePath.node().getTotalLength();
+    linePath
+      .attr("stroke-dasharray", `${totalLength} ${totalLength}`)
+      .attr("stroke-dashoffset", totalLength)
+      .transition()
+      .duration(1500)
+      .ease(d3.easeCubicOut)
+      .attr("stroke-dashoffset", 0);
+
+    // Pulsing current-time marker dot
+    const pulseDot = g
+      .append("circle")
+      .attr("cx", nowX)
+      .attr("cy", nowY)
+      .attr("r", 4)
+      .attr("fill", AMBER);
+
+    function pulse() {
+      pulseDot
+        .transition()
+        .duration(1000)
+        .ease(d3.easeSinInOut)
+        .attr("r", 7)
+        .attr("fill-opacity", 0.5)
+        .transition()
+        .duration(1000)
+        .ease(d3.easeSinInOut)
+        .attr("r", 4)
+        .attr("fill-opacity", 1)
+        .on("end", pulse);
+    }
+    pulse();
 
     // Tooltip interaction
     const tooltip = d3.select(tooltipRef.current);
@@ -196,7 +256,7 @@ export default function ForecastChart({ forecast, noForecast }) {
     : null;
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
+    <div className="glass-card rounded-xl p-6 md:col-span-2">
       <div className="mb-2 flex items-baseline justify-between">
         <p className="text-sm text-text-secondary">72-Hour Forecast</p>
         {generatedAt && (
@@ -207,7 +267,7 @@ export default function ForecastChart({ forecast, noForecast }) {
         <svg ref={svgRef} style={{ background: "transparent" }} />
         <div
           ref={tooltipRef}
-          className="pointer-events-none fixed z-50 rounded-md border border-border bg-card px-2 py-1 text-xs text-text-primary shadow-lg"
+          className="glass-card pointer-events-none fixed z-50 rounded-md px-2 py-1 text-xs text-text-primary"
           style={{ display: "none" }}
         />
       </div>
