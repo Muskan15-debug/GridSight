@@ -1,7 +1,7 @@
 from app.ml.predictor import predict_ac_power
 
 
-def predict_power(weather_rows: list[dict]) -> list[dict]:
+def predict_power(weather_rows: list[dict], panel_capacity_kw: float) -> list[dict]:
     """
     Runs each hourly weather row through the model. This is the ONLY place
     that calls predict_ac_power — every downstream consumer (forecast
@@ -26,6 +26,6 @@ def predict_power(weather_rows: list[dict]) -> list[dict]:
         }
         predictions.append({
             "timestamp": row["timestamp"],
-            "predicted_ac_power_kw": predict_ac_power(features),
+            "predicted_ac_power_kw": predict_ac_power(features, panel_capacity_kw),
         })
     return predictions
