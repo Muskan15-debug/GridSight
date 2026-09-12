@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 
 import httpx
+import pandas as pd
+import pvlib
 from fastapi import HTTPException
 
 OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast"
@@ -11,14 +13,21 @@ HOURLY_VARIABLES = [
     "diffuse_radiation",         # DHI, W/m²
     "temperature_2m",            # °C
     "wind_speed_10m",            # m/s
+    "relative_humidity_2m",      # %
 ]
 
 
 async def fetch_weather(lat: float, lon: float, hours: int = 72) -> list[dict]:
     """
     Fetches hourly weather from Open-Meteo (free, no key) for the given
-    coordinates and maps it into the feature shape the model expects:
-    GHI, DNI, DHI, Temperature, Wind_Speed, hour, month, timestamp.
+    coordinates and maps it into the 12-column feature shape the model
+    was trained on: Year, Month, Day, Hour, Minute, Temperature, DHI, DNI,
+    GHI, Relative Humidity, Solar Zenith Angle, Wind Speed — plus an extra
+    `timestamp` field (not a model input) used elsewhere in the pipeline
+    for display, sorting, and hour alignment.
+
+    Open-Meteo doesn't provide solar zenith angle, so it's computed
+    locally via pvlib's standard solar position algorithm.
 
     Open-Meteo interpolates to any lat/lon globally — no station matching.
     """
@@ -44,25 +53,34 @@ async def fetch_weather(lat: float, lon: float, hours: int = 72) -> list[dict]:
     if not hourly:
         raise HTTPException(status_code=502, detail="Weather service returned no data")
 
-    timestamps = hourly["time"]
+    timestamps = hourly["time"][:hours]
     ghi = hourly["shortwave_radiation"]
     dni = hourly["direct_normal_irradiance"]
     dhi = hourly["diffuse_radiation"]
     temp = hourly["temperature_2m"]
     wind = hourly["wind_speed_10m"]
+    humidity = hourly["relative_humidity_2m"]
+
+    datetimes = [datetime.fromisoformat(ts).replace(tzinfo=timezone.utc) for ts in timestamps]
+    solar_positions = pvlib.solarposition.get_solarposition(pd.DatetimeIndex(datetimes), lat, lon)
+    zenith_angles = solar_positions["zenith"].tolist()
 
     rows = []
-    for i, ts in enumerate(timestamps[:hours]):
-        dt = datetime.fromisoformat(ts).replace(tzinfo=timezone.utc)
+    for i, dt in enumerate(datetimes):
         rows.append({
             "timestamp": dt.isoformat(),
-            "GHI": ghi[i],
-            "DNI": dni[i],
-            "DHI": dhi[i],
+            "Year": dt.year,
+            "Month": dt.month,
+            "Day": dt.day,
+            "Hour": dt.hour,
+            "Minute": dt.minute,
             "Temperature": temp[i],
-            "Wind_Speed": wind[i],
-            "hour": dt.hour,
-            "month": dt.month,
+            "DHI": dhi[i],
+            "DNI": dni[i],
+            "GHI": ghi[i],
+            "Relative Humidity": humidity[i],
+            "Solar Zenith Angle": round(float(zenith_angles[i]), 3),
+            "Wind Speed": wind[i],
         })
 
     return rows

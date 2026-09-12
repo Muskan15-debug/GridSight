@@ -1,6 +1,7 @@
 def predict_ac_power(features: dict) -> float:
     """
-    features keys: GHI, DNI, DHI, Temperature, Wind_Speed, hour, month
+    features keys: Year, Month, Day, Hour, Minute, Temperature, DHI, DNI,
+    GHI, Relative Humidity, Solar Zenith Angle, Wind Speed
     Returns predicted AC power in kW.
 
     STUB IMPLEMENTATION — replace when model_v1.joblib is provided.
