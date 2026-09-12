@@ -11,13 +11,18 @@ def predict_power(weather_rows: list[dict]) -> list[dict]:
     predictions = []
     for row in weather_rows:
         features = {
-            "GHI": row["GHI"],
-            "DNI": row["DNI"],
-            "DHI": row["DHI"],
+            "Year": row["Year"],
+            "Month": row["Month"],
+            "Day": row["Day"],
+            "Hour": row["Hour"],
+            "Minute": row["Minute"],
             "Temperature": row["Temperature"],
-            "Wind_Speed": row["Wind_Speed"],
-            "hour": row["hour"],
-            "month": row["month"],
+            "DHI": row["DHI"],
+            "DNI": row["DNI"],
+            "GHI": row["GHI"],
+            "Relative Humidity": row["Relative Humidity"],
+            "Solar Zenith Angle": row["Solar Zenith Angle"],
+            "Wind Speed": row["Wind Speed"],
         }
         predictions.append({
             "timestamp": row["timestamp"],
