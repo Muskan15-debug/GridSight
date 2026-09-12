@@ -5,7 +5,7 @@ physics:
   noct: 45
   gamma: -0.004
   system_loss: 0.97
-  capacity_kw: 1000  # assumption
+  capacity_kw: 1000
 
 model:
   n_estimators: 500
