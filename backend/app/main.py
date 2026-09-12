@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.db import close_mongo_connection, connect_to_mongo
-from app.routers import auth, users
+from app.routers import auth, users, weather
 
 
 @asynccontextmanager
@@ -27,6 +27,7 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(users.router)
+app.include_router(weather.router)
 
 
 @app.get("/health")
