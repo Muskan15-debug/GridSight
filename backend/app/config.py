@@ -2,10 +2,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    mongo_uri: str = "mongodb://localhost:27017"
+    mongo_uri: str
     mongo_db_name: str = "gridsight"
 
-    jwt_secret: str = "change-this-to-a-long-random-string"
+    jwt_secret: str
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 1440
 

@@ -4,14 +4,17 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.db import close_mongo_connection, connect_to_mongo
-from app.routers import auth, users, weather
+from app.db import close_mongo_connection, connect_to_mongo, get_db
+from app.routers import auth, demand, forecast, storage, users, weather
+from app.services.scheduler import start_scheduler, stop_scheduler
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await connect_to_mongo()
+    start_scheduler(get_db())
     yield
+    stop_scheduler()
     await close_mongo_connection()
 
 
@@ -28,6 +31,9 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(weather.router)
+app.include_router(forecast.router)
+app.include_router(demand.router)
+app.include_router(storage.router)
 
 
 @app.get("/health")

@@ -53,3 +53,11 @@ async def run_forecast_for_user(
     result = await db.forecasts.insert_one(forecast_record)
     forecast_record["_id"] = str(result.inserted_id)
     return forecast_record
+
+
+async def get_latest_forecast(db: AsyncIOMotorDatabase, user_id: str) -> dict | None:
+    doc = await db.forecasts.find_one({"user_id": user_id}, sort=[("generated_at", -1)])
+    if doc is None:
+        return None
+    doc["_id"] = str(doc["_id"])
+    return doc

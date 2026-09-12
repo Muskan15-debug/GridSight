@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from bson import ObjectId
 from bson.errors import InvalidId
@@ -70,7 +70,7 @@ async def authenticate_user(db: AsyncIOMotorDatabase, email: str, password: str)
     return _user_doc_to_out(doc)
 
 
-async def get_user_by_id(db: AsyncIOMotorDatabase, user_id: str) -> UserOut:
+async def _get_user_doc_by_id(db: AsyncIOMotorDatabase, user_id: str) -> dict:
     try:
         oid = ObjectId(user_id)
     except InvalidId:
@@ -79,10 +79,42 @@ async def get_user_by_id(db: AsyncIOMotorDatabase, user_id: str) -> UserOut:
     doc = await db.users.find_one({"_id": oid})
     if not doc:
         raise HTTPException(status_code=404, detail="User not found")
+    return doc
+
+
+async def get_user_by_id(db: AsyncIOMotorDatabase, user_id: str) -> UserOut:
+    doc = await _get_user_doc_by_id(db, user_id)
     return _user_doc_to_out(doc)
+
+
+async def get_all_users(db: AsyncIOMotorDatabase) -> list[UserOut]:
+    docs = await db.users.find().to_list(length=None)
+    return [_user_doc_to_out(doc) for doc in docs]
 
 
 async def update_user_profile(db: AsyncIOMotorDatabase, user_id: str, updates: dict) -> UserOut:
     if updates:
         await db.users.update_one({"_id": ObjectId(user_id)}, {"$set": updates})
     return await get_user_by_id(db, user_id)
+
+
+async def enforce_manual_repredict_cooldown(
+    db: AsyncIOMotorDatabase, user_id: str, cooldown_minutes: int
+) -> None:
+    doc = await _get_user_doc_by_id(db, user_id)
+    last = doc.get("last_manual_repredict_at")
+    if last:
+        elapsed = datetime.now(timezone.utc) - datetime.fromisoformat(last)
+        remaining = timedelta(minutes=cooldown_minutes) - elapsed
+        if remaining.total_seconds() > 0:
+            raise HTTPException(
+                status_code=429,
+                detail=f"Please wait {int(remaining.total_seconds())}s before repredicting again",
+            )
+
+
+async def mark_manual_repredict(db: AsyncIOMotorDatabase, user_id: str) -> None:
+    await db.users.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": {"last_manual_repredict_at": datetime.now(timezone.utc).isoformat()}},
+    )

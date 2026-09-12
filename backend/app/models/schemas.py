@@ -61,6 +61,21 @@ class TokenResponse(BaseModel):
     user: UserOut
 
 
+class UpdateDemandRequest(BaseModel):
+    demand_kwh: float = Field(gt=0)
+
+
+class UpdateStorageRequest(BaseModel):
+    storage_capacity_kwh: float = Field(ge=0)
+    current_charge_kwh: float = Field(ge=0)
+
+
+class RepredictRequest(BaseModel):
+    demand_kwh: float = Field(gt=0)
+    storage_capacity_kwh: float = Field(ge=0)
+    current_charge_kwh: float = Field(ge=0)
+
+
 class UpdateProfileRequest(BaseModel):
     panel_area_sqm: float | None = Field(default=None, gt=0)
     panel_capacity_kw: float | None = Field(default=None, gt=0)
