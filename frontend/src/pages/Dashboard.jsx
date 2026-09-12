@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import CurrentPowerCard from "../components/dashboard/CurrentPowerCard";
 import ForecastChart from "../components/dashboard/ForecastChart";
 import RecommendationCard from "../components/dashboard/RecommendationCard";
@@ -118,7 +119,70 @@ export default function Dashboard() {
       {forecastLoading && <LoadingSpinner label="Loading forecast…" />}
       {!forecastLoading && forecastError && <ErrorBanner message={forecastError} />}
       {!forecastLoading && !forecastError && noForecast && (
-        <p className="text-text-secondary">No forecast yet — click Re-predict to generate one</p>
+        <div className="flex justify-center py-16">
+          <div className="text-center" style={{ maxWidth: 560 }}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 48 48"
+              fill="none"
+              className="mx-auto mb-6"
+              style={{ width: 48, height: 48 }}
+            >
+              <circle cx="24" cy="24" r="10" stroke="#F59E0B" strokeWidth="1.5" />
+              {Array.from({ length: 8 }).map((_, i) => {
+                const angle = (i * Math.PI) / 4;
+                const x1 = 24 + Math.cos(angle) * 15;
+                const y1 = 24 + Math.sin(angle) * 15;
+                const x2 = 24 + Math.cos(angle) * 21;
+                const y2 = 24 + Math.sin(angle) * 21;
+                return (
+                  <line
+                    key={i}
+                    x1={x1}
+                    y1={y1}
+                    x2={x2}
+                    y2={y2}
+                    stroke="#F59E0B"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                );
+              })}
+            </svg>
+
+            <h2
+              className="mb-3"
+              style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "1.5rem", color: "#F8FAFC" }}
+            >
+              Your first forecast is one click away.
+            </h2>
+            <p className="mb-6" style={{ fontFamily: "'Inter', sans-serif", color: "#6B7280", fontSize: "0.9rem" }}>
+              GridSight will fetch live weather for your location and predict your panel output for the next 72 hours.
+            </p>
+
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setModalOpen(true)}
+              style={{
+                backgroundColor: "#F59E0B",
+                color: "#0A0A0A",
+                borderRadius: 4,
+                padding: "13px 32px",
+                fontFamily: "'Space Grotesk', sans-serif",
+                fontWeight: 600,
+                border: "none",
+                display: "inline-block",
+              }}
+            >
+              Generate forecast &rarr;
+            </motion.button>
+
+            <p className="mt-3 text-xs" style={{ color: "#6B7280" }}>
+              Takes about 5 seconds
+            </p>
+          </div>
+        </div>
       )}
 
       {!forecastLoading && !forecastError && !noForecast && forecast && (
