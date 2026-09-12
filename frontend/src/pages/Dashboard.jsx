@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import CurrentPowerCard from "../components/dashboard/CurrentPowerCard";
 import ForecastChart from "../components/dashboard/ForecastChart";
 import RecommendationCard from "../components/dashboard/RecommendationCard";
+import AIRecommendationCard from "../components/dashboard/AIRecommendationCard";
 import RepredictModal from "../components/dashboard/RepredictModal";
 import WeatherGauges from "../components/dashboard/WeatherGauges";
 import ErrorBanner from "../components/common/ErrorBanner";
@@ -123,6 +124,12 @@ export default function Dashboard() {
 
           <div className="md:col-span-2">
             <RecommendationCard recommendation={recommendation} />
+          </div>
+
+          <div className="md:col-span-2">
+            <AIRecommendationCard
+              recommendation={forecast?.ai_recommendation}
+            />
           </div>
         </div>
       )}
