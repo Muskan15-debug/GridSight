@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import ErrorBanner from "../components/common/ErrorBanner";
+import LoadingSpinner from "../components/common/LoadingSpinner";
 import HistoryChart from "../components/history/HistoryChart";
 import api from "../services/api";
 
@@ -20,11 +22,11 @@ export default function History() {
   const net = totalGenerated - totalDemand;
 
   return (
-    <div className="min-h-screen bg-background p-6 text-text-primary">
+    <div className="p-6 text-text-primary">
       <h1 className="mb-6 text-2xl font-semibold">History</h1>
 
-      {loading && <p className="text-text-secondary">Loading history…</p>}
-      {!loading && error && <p className="text-danger">{error}</p>}
+      {loading && <LoadingSpinner label="Loading history…" />}
+      {!loading && error && <ErrorBanner message={error} />}
 
       {!loading && !error && dailySummary.length === 0 && (
         <p className="text-text-secondary">

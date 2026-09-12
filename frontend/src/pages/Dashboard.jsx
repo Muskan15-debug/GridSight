@@ -4,6 +4,8 @@ import ForecastChart from "../components/dashboard/ForecastChart";
 import RecommendationCard from "../components/dashboard/RecommendationCard";
 import RepredictModal from "../components/dashboard/RepredictModal";
 import WeatherGauges from "../components/dashboard/WeatherGauges";
+import ErrorBanner from "../components/common/ErrorBanner";
+import LoadingSpinner from "../components/common/LoadingSpinner";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
@@ -58,7 +60,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6 text-text-primary">
+    <div className="p-6 text-text-primary">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Dashboard</h1>
@@ -75,8 +77,8 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {forecastLoading && <p className="text-text-secondary">Loading forecast…</p>}
-      {!forecastLoading && forecastError && <p className="text-danger">{forecastError}</p>}
+      {forecastLoading && <LoadingSpinner label="Loading forecast…" />}
+      {!forecastLoading && forecastError && <ErrorBanner message={forecastError} />}
       {!forecastLoading && !forecastError && noForecast && (
         <p className="text-text-secondary">No forecast yet — click Re-predict to generate one</p>
       )}
@@ -86,13 +88,13 @@ export default function Dashboard() {
           <CurrentPowerCard forecast={forecast} panelCapacityKw={user?.panel?.capacity_kw ?? 0} />
 
           {weatherLoading && (
-            <div className="rounded-xl border border-border bg-card p-6 text-text-secondary">
-              Loading weather…
+            <div className="rounded-xl border border-border bg-card p-6">
+              <LoadingSpinner label="Loading weather…" />
             </div>
           )}
           {!weatherLoading && weatherError && (
-            <div className="rounded-xl border border-border bg-card p-6 text-danger">
-              {weatherError}
+            <div className="rounded-xl border border-border bg-card p-6">
+              <ErrorBanner message={weatherError} />
             </div>
           )}
           {!weatherLoading && !weatherError && weather && <WeatherGauges weather={weather} />}

@@ -1,11 +1,13 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import LoadingSpinner from "../common/LoadingSpinner";
+import Navbar from "../common/Navbar";
 
 export default function ProtectedRoute({ children }) {
   const { token, user, loading } = useAuth();
 
   if (loading) {
-    return <div className="flex min-h-screen items-center justify-center bg-background text-text-secondary">Loading…</div>;
+    return <LoadingSpinner fullScreen label="Loading…" />;
   }
 
   if (!token) {
@@ -16,5 +18,10 @@ export default function ProtectedRoute({ children }) {
     return <Navigate to="/onboarding" replace />;
   }
 
-  return children;
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      {children}
+    </div>
+  );
 }
