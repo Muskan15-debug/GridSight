@@ -89,7 +89,7 @@ export default function HistoryChart({ dailySummary }) {
         .style("left", `${event.clientX + 12}px`)
         .style("top", `${event.clientY - 32}px`)
         .html(
-          `${formatDate(parseDate(d.date))}<br/>Generation: ${d.total_kwh.toFixed(2)} kWh<br/>Demand: ${(d.demand_kwh ?? 0).toFixed(2)} kWh`
+          `${formatDate(parseDate(d.date))}<br/>Predicted: ${d.total_kwh.toFixed(2)} kWh<br/>Demand: ${(d.demand_kwh ?? 0).toFixed(2)} kWh`
         );
     }
     function hideTooltip() {
@@ -122,7 +122,7 @@ export default function HistoryChart({ dailySummary }) {
       <div className="mb-3 flex items-center gap-4 text-xs text-text-secondary">
         <span className="flex items-center gap-1">
           <span className="inline-block h-3 w-3 rounded-sm" style={{ background: AMBER }} />
-          Generation
+          Predicted Generation
         </span>
         <span className="flex items-center gap-1">
           <span className="inline-block h-3 w-3 rounded-sm" style={{ background: BLUE }} />

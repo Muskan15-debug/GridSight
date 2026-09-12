@@ -24,7 +24,15 @@ export default function Dashboard() {
 
   const [modalOpen, setModalOpen] = useState(false);
 
-  useEffect(() => {
+  const [forecastRefreshing, setForecastRefreshing] = useState(false);
+
+  function fetchForecast(opts = {}) {
+    if (opts.silent) {
+      setForecastRefreshing(true);
+    } else {
+      setForecastLoading(true);
+    }
+    setForecastError("");
     api
       .get("/api/v1/forecast/latest")
       .then((res) => {
@@ -39,8 +47,13 @@ export default function Dashboard() {
           setForecastError("Failed to load forecast.");
         }
       })
-      .finally(() => setForecastLoading(false));
-  }, []);
+      .finally(() => {
+        setForecastLoading(false);
+        setForecastRefreshing(false);
+      });
+  }
+
+  useEffect(() => { fetchForecast(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!user?.location?.lat || !user?.location?.lon) return;
@@ -85,7 +98,12 @@ export default function Dashboard() {
 
       {!forecastLoading && !forecastError && !noForecast && forecast && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <CurrentPowerCard forecast={forecast} panelCapacityKw={user?.panel?.capacity_kw ?? 0} />
+          <CurrentPowerCard
+            forecast={forecast}
+            panelCapacityKw={user?.panel?.capacity_kw ?? 0}
+            refreshing={forecastRefreshing}
+            onRefresh={() => fetchForecast({ silent: true })}
+          />
 
           {weatherLoading && (
             <div className="rounded-xl border border-border bg-card p-6">
