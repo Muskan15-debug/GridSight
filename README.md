@@ -233,7 +233,7 @@ Dedicated ML development branch focused on model training and optimization.
 - **Shruti Patel** (@ShrutiPatel038) - Backend Development & API Integration
 - **Het** (@hetrank) - Machine Learning & Model Development
 - **Muskan** (@Muskan15-debug) - Project Lead, Frontend and Service Integration
-- **Mitali Radia** (@mitaliradia) - Backend Developement and Service Integration
+- **Mitali Radia** (@mitaliradia) - Backend Development and Service Integration
 
 ---
 
@@ -294,3 +294,6 @@ python backend/app.py
 ---
 
 **GridSight**: Powering the renewable energy grid with AI-driven forecasting and actionable intelligence.
+
+
+
