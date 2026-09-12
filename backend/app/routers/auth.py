@@ -4,8 +4,8 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from app.core.deps import get_current_user
 from app.core.security import create_access_token
 from app.db import get_db
-from app.models.schemas import LoginRequest, SignupRequest, TokenResponse, UserOut
-from app.services.auth_service import authenticate_user, create_user
+from app.models.schemas import ChangePasswordRequest, LoginRequest, SignupRequest, TokenResponse, UserOut
+from app.services.auth_service import authenticate_user, change_password, create_user
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
@@ -28,6 +28,15 @@ async def login(payload: LoginRequest, db: AsyncIOMotorDatabase = Depends(get_db
 async def logout():
     # JWTs are stateless — the client discards the token. Nothing to invalidate server-side yet.
     return {"detail": "Logged out"}
+
+
+@router.put("/password", status_code=204)
+async def update_password(
+    payload: ChangePasswordRequest,
+    current_user: UserOut = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_db),
+):
+    await change_password(db, current_user.id, payload.current_password, payload.new_password)
 
 
 @router.get("/me", response_model=UserOut)

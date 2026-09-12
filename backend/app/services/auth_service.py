@@ -113,6 +113,18 @@ async def enforce_manual_repredict_cooldown(
             )
 
 
+async def change_password(
+    db: AsyncIOMotorDatabase, user_id: str, current_password: str, new_password: str
+) -> None:
+    doc = await _get_user_doc_by_id(db, user_id)
+    if not verify_password(current_password, doc["password_hash"]):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    await db.users.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": {"password_hash": hash_password(new_password)}},
+    )
+
+
 async def mark_manual_repredict(db: AsyncIOMotorDatabase, user_id: str) -> None:
     await db.users.update_one(
         {"_id": ObjectId(user_id)},

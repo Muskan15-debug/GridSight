@@ -78,6 +78,11 @@ class RepredictRequest(BaseModel):
     current_charge_kwh: float = Field(ge=0)
 
 
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=8)
+
+
 class UpdateProfileRequest(BaseModel):
     panel_area_sqm: float | None = Field(default=None, gt=0)
     panel_capacity_kw: float | None = Field(default=None, gt=0)

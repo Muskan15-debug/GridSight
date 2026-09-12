@@ -212,6 +212,69 @@ function EnergySettingsSection({ user, updateUser }) {
   );
 }
 
+function ChangePasswordSection() {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [saved, setSaved] = useState(false);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError("");
+    setSaved(false);
+    if (newPassword.length < 8) {
+      setError("New password must be at least 8 characters.");
+      return;
+    }
+    setSaving(true);
+    try {
+      await api.put("/api/v1/auth/password", {
+        current_password: currentPassword,
+        new_password: newPassword,
+      });
+      setCurrentPassword("");
+      setNewPassword("");
+      setSaved(true);
+    } catch (err) {
+      const detail = err.response?.data?.detail;
+      setError(typeof detail === "string" ? detail : "Failed to change password.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <SectionCard title="Change Password">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className={labelClass()} htmlFor="current-password">Current password</label>
+          <input
+            id="current-password"
+            type="password"
+            className={inputClass()}
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className={labelClass()} htmlFor="new-password">New password</label>
+          <input
+            id="new-password"
+            type="password"
+            className={inputClass()}
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+        </div>
+        <ErrorBanner message={error} onDismiss={() => setError("")} />
+        <SaveButton saving={saving}>Change password</SaveButton>
+        <SuccessNote show={saved} />
+      </form>
+    </SectionCard>
+  );
+}
+
 function AccountSection({ user, updateUser }) {
   const [changingLocation, setChangingLocation] = useState(false);
   const [address, setAddress] = useState("");
@@ -308,6 +371,7 @@ export default function Settings() {
       <h1 className="text-2xl font-semibold">Settings</h1>
       <PanelInfoSection user={user} updateUser={updateUser} />
       <EnergySettingsSection user={user} updateUser={updateUser} />
+      <ChangePasswordSection />
       <AccountSection user={user} updateUser={updateUser} />
     </div>
   );
