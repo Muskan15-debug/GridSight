@@ -12,3 +12,7 @@ timezonefinder==6.5.7
 pvlib==0.15.2
 python-dotenv==1.0.1
 apscheduler==3.10.4
+scikit-learn==1.7.2
+xgboost==3.4.1
+pandas==3.0.5
+joblib==1.5.2

@@ -24,7 +24,7 @@ async def run_forecast_for_user(
     lat, lon = user.location.lat, user.location.lon
 
     weather_rows = await fetch_weather(lat, lon, hours=hours)
-    predictions = predict_power(weather_rows)
+    predictions = predict_power(weather_rows, user.panel.capacity_kw)
 
     powers = [p["predicted_ac_power_kw"] for p in predictions]
     today_kwh = sum(powers[:24])
