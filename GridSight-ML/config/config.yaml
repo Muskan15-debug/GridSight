@@ -1,0 +1,28 @@
+data:
+  raw_file: "renewable_energy.csv"
+
+physics:
+  noct: 45
+  gamma: -0.004
+  system_loss: 0.97
+  capacity_kw: 1000
+
+model:
+  n_estimators: 500
+  max_depth: 8
+  learning_rate: 0.05
+  subsample: 0.8
+  colsample_bytree: 0.8
+  random_state: 42
+
+training:
+  test_size: 0.2
+
+model_tuning:
+  n_trials: 30
+  tuned_model_path: artifacts/hyperparameter_tuning/best_model.pkl
+  best_params_path: artifacts/hyperparameter_tuning/best_params.json
+  study_path: artifacts/hyperparameter_tuning/optuna_trials.csv
+
+tuned_model_evaluation:
+  tuned_metrics_path: artifacts/tuned_model_evaluation/metrics.json
