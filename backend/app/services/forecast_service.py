@@ -4,6 +4,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.models.schemas import UserOut
 from app.services.prediction_service import predict_power
+from app.services.recommendation_engine import generate_recommendation
 from app.services.weather_service import fetch_weather
 
 
@@ -30,6 +31,13 @@ async def run_forecast_for_user(
     peak_kw = max(powers)
     peak_hour = predictions[powers.index(peak_kw)]["timestamp"]
 
+    recommendation = generate_recommendation(
+        predicted_generation_kwh=today_kwh,
+        demand_kwh=user.demand.default_daily_kwh,
+        storage_capacity_kwh=user.storage.capacity_kwh,
+        current_charge_kwh=user.storage.current_charge_kwh,
+    )
+
     forecast_record = {
         "user_id": user.id,
         "location": {"lat": lat, "lon": lon},
@@ -47,7 +55,7 @@ async def run_forecast_for_user(
             "capacity_kwh": user.storage.capacity_kwh,
             "current_charge_kwh": user.storage.current_charge_kwh,
         },
-        "recommendation": None,  # TODO(step 5): plug in generate_recommendation()
+        "recommendation": recommendation,
     }
 
     result = await db.forecasts.insert_one(forecast_record)
