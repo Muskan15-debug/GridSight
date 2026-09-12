@@ -9,6 +9,7 @@ import ErrorBanner from "../components/common/ErrorBanner";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
+import { generateGreeting } from "../utils/formatters";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -77,8 +78,17 @@ export default function Dashboard() {
     ? new Date(forecast.generated_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     : null;
 
+  const greeting = generateGreeting(noForecast ? [] : forecast?.hourly);
+
   return (
     <div className="px-8 pt-6 pb-8 text-text-primary">
+      <p
+        className="mb-6 text-text-primary"
+        style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "clamp(1.3rem, 2.5vw, 1.8rem)", fontWeight: 600 }}
+      >
+        {greeting}
+      </p>
+
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-1.5 text-sm text-text-secondary">
           {user?.location?.display_name && (

@@ -3,6 +3,7 @@ import ErrorBanner from "../components/common/ErrorBanner";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import HistoryChart from "../components/history/HistoryChart";
 import api from "../services/api";
+import { generateHistoryInsight } from "../utils/formatters";
 
 function SummaryCard({ label, value, prefixColor }) {
   return (
@@ -43,6 +44,7 @@ export default function History() {
   const totalGenerated = dailySummary.reduce((sum, d) => sum + d.total_kwh, 0);
   const totalDemand = dailySummary.reduce((sum, d) => sum + (d.demand_kwh ?? 0), 0);
   const net = totalGenerated - totalDemand;
+  const historyInsight = generateHistoryInsight(dailySummary);
 
   return (
     <div className="p-6 text-text-primary">
@@ -87,6 +89,15 @@ export default function History() {
               prefixColor={net >= 0 ? "#10B981" : "#EF4444"}
             />
           </div>
+
+          {historyInsight && (
+            <p
+              className="mb-4 text-text-primary"
+              style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "1.1rem" }}
+            >
+              {historyInsight}
+            </p>
+          )}
 
           <HistoryChart dailySummary={dailySummary} />
         </>

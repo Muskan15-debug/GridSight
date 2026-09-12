@@ -145,6 +145,39 @@ export default function ForecastChart({ forecast, noForecast }) {
       .attr("stroke-width", 2)
       .attr("d", line);
 
+    // Peak annotation — only for a real daytime peak, not a flat nighttime zero
+    const peakEntry = parsedData.reduce(
+      (max, d) => (d.kw > max.kw ? d : max),
+      parsedData[0]
+    );
+    if (peakEntry && peakEntry.kw > 0.5) {
+      const peakX = xScale(peakEntry.timestamp);
+      const peakY = yScale(peakEntry.kw);
+
+      g.append("line")
+        .attr("x1", peakX)
+        .attr("x2", peakX)
+        .attr("y1", peakY - 20)
+        .attr("y2", peakY)
+        .attr("stroke", "#F8FAFC")
+        .attr("stroke-width", 1);
+
+      g.append("circle")
+        .attr("cx", peakX)
+        .attr("cy", peakY)
+        .attr("r", 4)
+        .attr("fill", "#F8FAFC");
+
+      g.append("text")
+        .attr("x", peakX)
+        .attr("y", peakY - 26)
+        .attr("text-anchor", "middle")
+        .attr("fill", "#F8FAFC")
+        .style("font-family", "'Inter', sans-serif")
+        .style("font-size", "11px")
+        .text(`Peak · ${peakEntry.kw.toFixed(1)} kW`);
+    }
+
     // Tooltip interaction
     const tooltip = d3.select(tooltipRef.current);
     const bisect = d3.bisector((d) => d.timestamp).left;

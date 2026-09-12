@@ -21,6 +21,27 @@ const ACTION_CONFIG = {
   },
 };
 
+function getPersonalStatement(recommendation) {
+  const kwh =
+    recommendation.surplus_kwh ??
+    recommendation.deficit_kwh ??
+    recommendation.grid_kwh_needed ??
+    0;
+
+  switch (recommendation.status) {
+    case "charge_storage":
+      return `You'll generate ${kwh} kWh more than you need. Store it.`;
+    case "export_or_curtail":
+      return `${kwh} kWh will go to waste if you don't act today.`;
+    case "draw_from_storage":
+      return `Generation falls short by ${kwh} kWh. Your battery covers it.`;
+    case "draw_from_grid":
+      return `You're ${kwh} kWh short today. Grid power needed.`;
+    default:
+      return recommendation.title;
+  }
+}
+
 export default function RecommendationCard({ recommendation }) {
   if (!recommendation) return null;
 
@@ -34,9 +55,9 @@ export default function RecommendationCard({ recommendation }) {
     >
       <p
         className="text-text-primary"
-        style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "1.1rem", fontWeight: 600 }}
+        style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "1.1rem", fontWeight: 700 }}
       >
-        {recommendation.title}
+        {getPersonalStatement(recommendation)}
       </p>
       <p className="mt-2 text-sm" style={{ color: "#94A3B8" }}>
         {recommendation.message}
