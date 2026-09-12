@@ -1,0 +1,19 @@
+data:
+  raw_file: "renewable_energy.csv"
+
+physics:
+  noct: 45
+  gamma: -0.004
+  system_loss: 0.97
+  capacity_kw: 1000  # assumption
+
+model:
+  n_estimators: 500
+  max_depth: 8
+  learning_rate: 0.05
+  subsample: 0.8
+  colsample_bytree: 0.8
+  random_state: 42
+
+training:
+  test_size: 0.2
