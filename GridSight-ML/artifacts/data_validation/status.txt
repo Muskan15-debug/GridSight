@@ -1,0 +1,7 @@
+PASSED: All required columns are present.
+PASSED: Dataset contains 52560 rows.
+PASSED: No duplicate rows found.
+PASSED: No missing values found.
+PASSED: GHI values are valid.
+PASSED: DNI values are valid.
+PASSED: DHI values are valid.
