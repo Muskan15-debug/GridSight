@@ -69,3 +69,26 @@ async def get_latest_forecast(db: AsyncIOMotorDatabase, user_id: str) -> dict | 
         return None
     doc["_id"] = str(doc["_id"])
     return doc
+
+
+async def recompute_recommendation_for_latest_forecast(
+    db: AsyncIOMotorDatabase, user: UserOut
+) -> tuple[dict, dict] | None:
+    """
+    Re-scores the recommendation against the user's NEW demand/storage
+    values using the existing latest forecast's already-predicted
+    generation — no weather fetch, no model inference. The stored forecast
+    itself is left untouched; only the returned recommendation reflects
+    the change.
+    """
+    forecast = await get_latest_forecast(db, user.id)
+    if forecast is None:
+        return None
+
+    recommendation = generate_recommendation(
+        predicted_generation_kwh=forecast["summary"]["today_kwh"],
+        demand_kwh=user.demand.default_daily_kwh,
+        storage_capacity_kwh=user.storage.capacity_kwh,
+        current_charge_kwh=user.storage.current_charge_kwh,
+    )
+    return forecast, recommendation
