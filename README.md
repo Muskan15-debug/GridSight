@@ -31,7 +31,7 @@ GridSight is a comprehensive AI-powered platform that combines:
 
 ```
 GridSight/
-├── backend/                 # Flask-based REST API backend
+├── backend/                 # FastAPI-based REST API backend
 │   ├── routes/
 │   │   ├── auth.py         # User authentication and profile management
 │   │   ├── weather.py      # Weather data endpoints
@@ -52,7 +52,7 @@ GridSight/
 │   │   └── helpers.py      # Utility functions
 │   ├── config.py           # Configuration management
 │   ├── requirements.txt     # Python dependencies
-│   └── app.py             # Flask application entry point
+│   └── app.py             # FastAPI application entry point
 ├── data/                   # Data management
 │   ├── raw/               # Raw input data
 │   ├── processed/         # Processed and transformed data
@@ -287,7 +287,7 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 # Install dependencies
 pip install -r backend/requirements.txt
 
-# Run the Flask app
+# Run the FastAPI app
 python backend/app.py
 ```
 
