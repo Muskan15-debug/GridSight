@@ -136,7 +136,7 @@ Dedicated ML development branch focused on model training and optimization.
 ## 🛠 Tech Stack
 
 ### Backend
-- **Framework**: Flask (Python)
+- **Framework**: FastAPI (Python)
 - **API**: RESTful with JSON
 - **Authentication**: JWT/Session-based
 - **Database**: (TBD - Schema in development)
@@ -153,7 +153,7 @@ Dedicated ML development branch focused on model training and optimization.
 
 ### Data Sources
 - **Weather Data**: Open-Meteo API (free, real-time)
-- **Renewable Generation Data**: (TBD - Historical datasets)
+- **Renewable Generation Data**: NRDB
 - **Demand Data**: Grid operator inputs
 
 ---
@@ -205,11 +205,6 @@ Dedicated ML development branch focused on model training and optimization.
    - Real-time forecast charts
    - Recommendation alerts and notifications
 
-3. **Model Enhancements**
-   - Multi-model ensemble (XGBoost + LSTM for sequence prediction)
-   - Transfer learning for new locations
-   - Uncertainty quantification in predictions
-
 4. **Production Deployment**
    - Docker containerization
    - Kubernetes orchestration
@@ -227,11 +222,9 @@ Dedicated ML development branch focused on model training and optimization.
 ## 📊 Model Performance
 
 ### XGBoost Model Metrics
-- **Mean Absolute Error (MAE)**: ~[TBD - to be updated with actual metrics]
-- **RMSE**: ~[TBD - to be updated]
-- **R² Score**: ~[TBD - to be updated]
-
-*Metrics to be populated after final model evaluation*
+- **Mean Absolute Error (MAE)**: ~0.6830 kW   
+- **RMSE**: ~1.3952kW
+- **R² Score**: ~1.0000
 
 ---
 
@@ -239,7 +232,8 @@ Dedicated ML development branch focused on model training and optimization.
 
 - **Shruti Patel** (@ShrutiPatel038) - Backend Development & API Integration
 - **Het** (@hetrank) - Machine Learning & Model Development
-- **Muskan** (@Muskan15-debug) - Project Lead
+- **Muskan** (@Muskan15-debug) - Project Lead, Frontend and Service Integration
+- **Mitali Radia** (@mitaliradia) - Backend Developement and Service Integration
 
 ---
 
@@ -270,14 +264,8 @@ Dedicated ML development branch focused on model training and optimization.
 
 - **Open-Meteo API**: https://open-meteo.com/
 - **XGBoost Documentation**: https://xgboost.readthedocs.io/
-- **Flask Documentation**: https://flask.palletsprojects.com/
+- **FastAPI Documentation**: https://fastapi.tiangolo.com/
 - **Time Series Forecasting Best Practices**: https://otexts.com/fpp2/
-
----
-
-## 📄 License
-
-(TBD - Add license information)
 
 ---
 
