@@ -1,0 +1,17 @@
+feature,importance
+GHI,0.67112213
+T_cell,0.21399663
+DHI,0.063742734
+DNI,0.018213667
+Solar Zenith Angle,0.017227251
+hour_sin,0.005907588
+hour,0.004024786
+Temperature,0.003452535
+Relative Humidity,0.0013566188
+day_cos,0.0004700203
+Wind Speed,0.000144004
+hour_cos,0.00013903782
+day_of_year,0.00012285526
+month,5.0922474e-05
+day_sin,2.3608516e-05
+day_of_week,5.5518362e-06
