@@ -1,4 +1,8 @@
 import { useEffect, useState } from "react";
+import CurrentPowerCard from "../components/dashboard/CurrentPowerCard";
+import RecommendationCard from "../components/dashboard/RecommendationCard";
+import RepredictModal from "../components/dashboard/RepredictModal";
+import WeatherGauges from "../components/dashboard/WeatherGauges";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
@@ -14,6 +18,8 @@ export default function Dashboard() {
   const [weather, setWeather] = useState(null);
   const [weatherLoading, setWeatherLoading] = useState(true);
   const [weatherError, setWeatherError] = useState("");
+
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     api
@@ -44,36 +50,64 @@ export default function Dashboard() {
       .finally(() => setWeatherLoading(false));
   }, [user]);
 
+  function handleRepredictSuccess(newForecast, newRecommendation) {
+    setForecast(newForecast);
+    setRecommendation(newRecommendation);
+    setNoForecast(false);
+  }
+
   return (
-    <div className="p-6 text-text-primary">
-      <h1 className="text-2xl font-semibold">Dashboard</h1>
+    <div className="min-h-screen bg-background p-6 text-text-primary">
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Dashboard</h1>
+          {user?.location?.display_name && (
+            <p className="text-sm text-text-secondary">📍 {user.location.display_name}</p>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={() => setModalOpen(true)}
+          className="rounded-md bg-primary px-4 py-2 font-medium text-background transition hover:opacity-90"
+        >
+          Re-predict
+        </button>
+      </div>
 
-      <section className="mt-6">
-        <h2 className="text-lg font-medium">Forecast (/api/v1/forecast/latest)</h2>
-        {forecastLoading && <p>Loading forecast…</p>}
-        {!forecastLoading && forecastError && <p className="text-danger">{forecastError}</p>}
-        {!forecastLoading && !forecastError && noForecast && (
-          <p>No forecast yet — click Re-predict to generate one</p>
-        )}
-        {!forecastLoading && !forecastError && !noForecast && (
-          <pre className="mt-2 overflow-auto rounded bg-card p-3 text-xs">
-            {JSON.stringify({ forecast, recommendation }, null, 2)}
-          </pre>
-        )}
-      </section>
+      {forecastLoading && <p className="text-text-secondary">Loading forecast…</p>}
+      {!forecastLoading && forecastError && <p className="text-danger">{forecastError}</p>}
+      {!forecastLoading && !forecastError && noForecast && (
+        <p className="text-text-secondary">No forecast yet — click Re-predict to generate one</p>
+      )}
 
-      <section className="mt-6">
-        <h2 className="text-lg font-medium">
-          Current Weather (/api/v1/weather/current)
-        </h2>
-        {weatherLoading && <p>Loading weather…</p>}
-        {!weatherLoading && weatherError && <p className="text-danger">{weatherError}</p>}
-        {!weatherLoading && !weatherError && weather && (
-          <pre className="mt-2 overflow-auto rounded bg-card p-3 text-xs">
-            {JSON.stringify(weather, null, 2)}
-          </pre>
-        )}
-      </section>
+      {!forecastLoading && !forecastError && !noForecast && forecast && (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <CurrentPowerCard forecast={forecast} panelCapacityKw={user?.panel?.capacity_kw ?? 0} />
+
+          {weatherLoading && (
+            <div className="rounded-xl border border-border bg-card p-6 text-text-secondary">
+              Loading weather…
+            </div>
+          )}
+          {!weatherLoading && weatherError && (
+            <div className="rounded-xl border border-border bg-card p-6 text-danger">
+              {weatherError}
+            </div>
+          )}
+          {!weatherLoading && !weatherError && weather && <WeatherGauges weather={weather} />}
+
+          <div className="md:col-span-2">
+            <RecommendationCard recommendation={recommendation} />
+          </div>
+        </div>
+      )}
+
+      <RepredictModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        user={user}
+        onSuccess={handleRepredictSuccess}
+      />
     </div>
   );
 }
