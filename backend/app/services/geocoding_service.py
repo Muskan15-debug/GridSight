@@ -1,14 +1,20 @@
 import httpx
 from fastapi import HTTPException
+from timezonefinder import TimezoneFinder
 
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 
+_timezone_finder = TimezoneFinder()
 
-async def geocode_address(address: str) -> tuple[float, float, str]:
+
+async def geocode_address(address: str) -> tuple[float, float, str, str | None]:
     """
     Free geocoding via OpenStreetMap Nominatim (no API key).
-    Returns (lat, lon, display_name). Open-Meteo works for any lat/lon
-    globally, so no "nearest station" matching is needed here.
+    Returns (lat, lon, display_name, timezone). Open-Meteo works for any
+    lat/lon globally, so no "nearest station" matching is needed here.
+
+    Timezone is resolved locally from lat/lon via timezonefinder (pure
+    Python, no API key, no network call) — Nominatim doesn't provide it.
     """
     params = {"q": address, "format": "json", "limit": 1}
     headers = {"User-Agent": "GridSight/1.0 (solar-forecast-app)"}
@@ -24,4 +30,8 @@ async def geocode_address(address: str) -> tuple[float, float, str]:
         raise HTTPException(status_code=422, detail=f"Could not geocode address: {address}")
 
     result = results[0]
-    return float(result["lat"]), float(result["lon"]), result.get("display_name", address)
+    lat, lon = float(result["lat"]), float(result["lon"])
+    display_name = result.get("display_name", address)
+    tz_name = _timezone_finder.timezone_at(lat=lat, lng=lon)
+
+    return lat, lon, display_name, tz_name

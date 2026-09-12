@@ -27,10 +27,11 @@ async def update_profile(
     if payload.panel_capacity_kw is not None:
         updates["panel.capacity_kw"] = payload.panel_capacity_kw
     if payload.address is not None:
-        lat, lon, display_name = await geocode_address(payload.address)
+        lat, lon, display_name, tz_name = await geocode_address(payload.address)
         updates["location.lat"] = lat
         updates["location.lon"] = lon
         updates["location.display_name"] = display_name
+        updates["location.timezone"] = tz_name
     if payload.notification_email is not None:
         updates["notification_prefs.email"] = payload.notification_email
     if payload.notification_push is not None:

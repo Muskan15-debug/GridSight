@@ -25,7 +25,7 @@ def _user_doc_to_out(doc: dict) -> UserOut:
 
 
 async def create_user(db: AsyncIOMotorDatabase, payload: SignupRequest) -> UserOut:
-    lat, lon, display_name = await geocode_address(payload.address)
+    lat, lon, display_name, tz_name = await geocode_address(payload.address)
     now = datetime.now(timezone.utc).isoformat()
 
     user_doc = {
@@ -40,7 +40,7 @@ async def create_user(db: AsyncIOMotorDatabase, payload: SignupRequest) -> UserO
             "lat": lat,
             "lon": lon,
             "display_name": display_name,
-            "timezone": None,
+            "timezone": tz_name,
         },
         "demand": {
             "default_daily_kwh": payload.daily_demand_kwh,
