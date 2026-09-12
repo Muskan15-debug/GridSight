@@ -6,16 +6,10 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from app.core.deps import get_current_user
 from app.db import get_db
 from app.models.schemas import RepredictRequest, UserOut
-from app.services.auth_service import (
-    enforce_manual_repredict_cooldown,
-    mark_manual_repredict,
-    update_user_profile,
-)
+from app.services.auth_service import update_user_profile
 from app.services.forecast_service import get_latest_forecast, run_forecast_for_user
 
 router = APIRouter(prefix="/api/v1/forecast", tags=["forecast"])
-
-MANUAL_REPREDICT_COOLDOWN_MINUTES = 10
 
 
 @router.get("/latest")
@@ -45,8 +39,6 @@ async def repredict(
     from the "Update parameters" form, using live (not cached) weather.
     Rate-limited since this always hits Open-Meteo.
     """
-    await enforce_manual_repredict_cooldown(db, current_user.id, MANUAL_REPREDICT_COOLDOWN_MINUTES)
-
     now = datetime.now(timezone.utc).isoformat()
     updated_user = await update_user_profile(db, current_user.id, {
         "demand.default_daily_kwh": payload.demand_kwh,
@@ -57,6 +49,4 @@ async def repredict(
     })
 
     forecast = await run_forecast_for_user(db, updated_user, trigger="manual")
-    await mark_manual_repredict(db, current_user.id)
-
     return {"forecast": forecast, "recommendation": forecast["recommendation"]}

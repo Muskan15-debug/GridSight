@@ -44,12 +44,8 @@ export default function RepredictModal({ open, onClose, user, onSuccess }) {
       onSuccess(res.data.forecast, res.data.recommendation);
       onClose();
     } catch (err) {
-      if (err.response?.status === 429) {
-        setError("Please wait 10 minutes before re-predicting.");
-      } else {
         const detail = err.response?.data?.detail;
-        setError(typeof detail === "string" ? detail : "Failed to re-predict. Please try again.");
-      }
+        setError(typeof detail === "string" ? detail : "Repredict failed — please try again.");
     } finally {
       setSubmitting(false);
     }

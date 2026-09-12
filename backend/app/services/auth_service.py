@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 from bson import ObjectId
 from bson.errors import InvalidId
@@ -98,23 +98,15 @@ async def update_user_profile(db: AsyncIOMotorDatabase, user_id: str, updates: d
     return await get_user_by_id(db, user_id)
 
 
-async def enforce_manual_repredict_cooldown(
-    db: AsyncIOMotorDatabase, user_id: str, cooldown_minutes: int
+async def change_password(
+    db: AsyncIOMotorDatabase, user_id: str, current_password: str, new_password: str
 ) -> None:
     doc = await _get_user_doc_by_id(db, user_id)
-    last = doc.get("last_manual_repredict_at")
-    if last:
-        elapsed = datetime.now(timezone.utc) - datetime.fromisoformat(last)
-        remaining = timedelta(minutes=cooldown_minutes) - elapsed
-        if remaining.total_seconds() > 0:
-            raise HTTPException(
-                status_code=429,
-                detail=f"Please wait {int(remaining.total_seconds())}s before repredicting again",
-            )
-
-
-async def mark_manual_repredict(db: AsyncIOMotorDatabase, user_id: str) -> None:
+    if not verify_password(current_password, doc["password_hash"]):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
     await db.users.update_one(
         {"_id": ObjectId(user_id)},
-        {"$set": {"last_manual_repredict_at": datetime.now(timezone.utc).isoformat()}},
+        {"$set": {"password_hash": hash_password(new_password)}},
     )
+
+

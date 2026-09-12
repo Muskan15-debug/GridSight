@@ -63,9 +63,18 @@ const GAUGE_ORDER = [
 export default function WeatherGauges({ weather }) {
   if (!weather?.gauges) return null;
 
+  const updatedAt = weather.timestamp
+    ? new Date(weather.timestamp).toLocaleString()
+    : null;
+
   return (
     <div className="rounded-xl border border-border bg-card p-6">
-      <p className="mb-2 text-sm text-text-secondary">Weather</p>
+      <div className="mb-2 flex items-baseline justify-between">
+        <p className="text-sm text-text-secondary">Weather</p>
+        {updatedAt && (
+          <p className="text-xs text-text-secondary">Updated {updatedAt}</p>
+        )}
+      </div>
       <div className="flex flex-wrap justify-around gap-4">
         {GAUGE_ORDER.map(({ key, label }) => {
           const gauge = weather.gauges[key];
