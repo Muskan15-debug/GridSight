@@ -12,45 +12,49 @@ function findCurrentHourEntry(hourly) {
   return candidate ?? hourly[0];
 }
 
-export default function CurrentPowerCard({ forecast, panelCapacityKw, refreshing, onRefresh }) {
+function getStatus(kw, ratio) {
+  if (kw <= 0.01) {
+    return { label: "NIGHT", border: "#475569", badgeBg: "rgba(148,163,184,0.15)", badgeText: "#94A3B8" };
+  }
+  if (ratio < 0.3) {
+    return { label: "LOW", border: "#F59E0B", badgeBg: "rgba(245,158,11,0.15)", badgeText: "#F59E0B" };
+  }
+  return { label: "GENERATING", border: "#10B981", badgeBg: "rgba(16,185,129,0.15)", badgeText: "#10B981" };
+}
+
+export default function CurrentPowerCard({ forecast, panelCapacityKw }) {
   const entry = findCurrentHourEntry(forecast?.hourly);
   const kw = entry?.predicted_ac_power_kw ?? 0;
   const ratio = panelCapacityKw > 0 ? kw / panelCapacityKw : 0;
-
-  const dotColor = ratio > 0.7 ? "bg-success" : ratio >= 0.3 ? "bg-warning" : "bg-danger";
+  const status = getStatus(kw, ratio);
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
+    <div
+      className="h-full rounded-xl bg-card p-6"
+      style={{ borderLeft: `3px solid ${status.border}` }}
+    >
       <div className="flex items-center justify-between">
         <p className="text-sm text-text-secondary">Current Power</p>
-        <button
-          type="button"
-          onClick={onRefresh}
-          disabled={refreshing}
-          aria-label="Refresh current power"
-          className="text-text-secondary transition hover:text-text-primary disabled:opacity-40"
+        <span
+          className="rounded-full px-3 py-1 text-xs font-semibold tracking-wide"
+          style={{ backgroundColor: status.badgeBg, color: status.badgeText }}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
-          >
-            <path
-              fillRule="evenodd"
-              d="M15.312 3.313a8 8 0 1 0 2.196 7.039.75.75 0 0 0-1.456-.364 6.5 6.5 0 1 1-1.801-5.734l-1.627 1.627A.75.75 0 0 0 13.25 7.5h3.5A.75.75 0 0 0 17.5 6.75v-3.5a.75.75 0 0 0-1.28-.53l-1.908 1.593Z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </button>
+          {status.label}
+        </span>
       </div>
-      <div className="mt-2 flex items-baseline gap-3">
-        <span className="text-4xl font-bold text-text-primary">{kw.toFixed(2)}</span>
-        <span className="text-lg text-text-secondary">kW</span>
-        <span className={`ml-2 h-3 w-3 rounded-full ${dotColor}`} />
+      <div className="mt-3 flex items-baseline gap-2">
+        <span
+          className="font-bold text-text-primary"
+          style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "clamp(4rem, 8vw, 7rem)", lineHeight: 1 }}
+        >
+          {kw.toFixed(2)}
+        </span>
+        <span className="text-2xl font-semibold" style={{ color: "#F59E0B" }}>
+          kW
+        </span>
       </div>
       {entry && (
-        <p className="mt-1 text-xs text-text-secondary">
+        <p className="mt-2 text-sm text-text-secondary">
           Forecast for {new Date(entry.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · updates hourly
         </p>
       )}

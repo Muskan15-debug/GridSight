@@ -5,7 +5,23 @@ import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
 function inputClass() {
-  return "w-full rounded-md border border-border bg-background px-3 py-2 text-text-primary focus:border-primary focus:outline-none";
+  return "w-full text-white transition focus:outline-none";
+}
+
+function inputStyle() {
+  return {
+    borderRadius: 6,
+    padding: "10px 14px",
+    backgroundColor: "#0F172A",
+    border: "1px solid #334155",
+  };
+}
+
+function handleFocus(e) {
+  e.target.style.borderColor = "#F59E0B";
+}
+function handleBlur(e) {
+  e.target.style.borderColor = "#334155";
 }
 
 function labelClass() {
@@ -23,13 +39,21 @@ function SectionCard({ title, children }) {
 
 function SaveButton({ saving, children = "Save" }) {
   return (
-    <button
-      type="submit"
-      disabled={saving}
-      className="rounded-md bg-primary px-4 py-2 font-medium text-background transition hover:opacity-90 disabled:opacity-50"
-    >
-      {saving ? "Saving…" : children}
-    </button>
+    <div className="flex justify-end">
+      <button
+        type="submit"
+        disabled={saving}
+        style={{
+          backgroundColor: "#F59E0B",
+          color: "#0F172A",
+          borderRadius: 4,
+          padding: "8px 20px",
+        }}
+        className="text-sm font-medium transition hover:opacity-90 disabled:opacity-50"
+      >
+        {saving ? "Saving…" : children}
+      </button>
+    </div>
   );
 }
 
@@ -78,6 +102,9 @@ function PanelInfoSection({ user, updateUser }) {
             min="0"
             step="any"
             className={inputClass()}
+            style={inputStyle()}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             value={panelAreaSqm}
             onChange={(e) => setPanelAreaSqm(e.target.value)}
           />
@@ -92,6 +119,9 @@ function PanelInfoSection({ user, updateUser }) {
             min="0"
             step="any"
             className={inputClass()}
+            style={inputStyle()}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             value={panelCapacityKw}
             onChange={(e) => setPanelCapacityKw(e.target.value)}
           />
@@ -169,6 +199,9 @@ function EnergySettingsSection({ user, updateUser }) {
             min="0"
             step="any"
             className={inputClass()}
+            style={inputStyle()}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             value={demandKwh}
             onChange={(e) => setDemandKwh(e.target.value)}
           />
@@ -183,6 +216,9 @@ function EnergySettingsSection({ user, updateUser }) {
             min="0"
             step="any"
             className={inputClass()}
+            style={inputStyle()}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             value={storageCapacityKwh}
             onChange={(e) => setStorageCapacityKwh(e.target.value)}
           />
@@ -197,6 +233,9 @@ function EnergySettingsSection({ user, updateUser }) {
             min="0"
             step="any"
             className={inputClass()}
+            style={inputStyle()}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             value={currentChargeKwh}
             onChange={(e) => setCurrentChargeKwh(e.target.value)}
           />
@@ -245,14 +284,20 @@ function ChangePasswordSection() {
   }
 
   return (
-    <SectionCard title="Change Password">
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="rounded-lg border border-border/60 p-4">
+      <h2 className="mb-3 font-medium text-text-secondary" style={{ fontSize: "0.85rem" }}>
+        Change Password
+      </h2>
+      <form onSubmit={handleSubmit} className="space-y-3">
         <div>
           <label className={labelClass()} htmlFor="current-password">Current password</label>
           <input
             id="current-password"
             type="password"
             className={inputClass()}
+            style={inputStyle()}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
           />
@@ -263,6 +308,9 @@ function ChangePasswordSection() {
             id="new-password"
             type="password"
             className={inputClass()}
+            style={inputStyle()}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
           />
@@ -271,7 +319,7 @@ function ChangePasswordSection() {
         <SaveButton saving={saving}>Change password</SaveButton>
         <SuccessNote show={saved} />
       </form>
-    </SectionCard>
+    </div>
   );
 }
 
@@ -301,61 +349,54 @@ function AccountSection({ user, updateUser }) {
   }
 
   return (
-    <SectionCard title="Account">
-      <div className="space-y-4">
-        <div>
-          <p className={labelClass()}>Email</p>
-          <p className="text-text-primary">{user.email}</p>
+    <div className="border-t border-border pt-6">
+      <p className="text-sm text-text-secondary">{user.email}</p>
+
+      {!changingLocation && (
+        <div className="mt-1 flex items-center justify-between">
+          <p className="text-sm text-text-secondary">{user.location?.display_name}</p>
+          <button
+            type="button"
+            onClick={() => {
+              setAddress(user.location?.display_name ?? "");
+              setChangingLocation(true);
+              setSaved(false);
+            }}
+            className="text-sm text-primary hover:underline"
+          >
+            Change location
+          </button>
         </div>
+      )}
 
-        <div>
-          <p className={labelClass()}>Location</p>
-          {!changingLocation && (
-            <div className="flex items-center justify-between">
-              <p className="text-text-primary">{user.location?.display_name}</p>
-              <button
-                type="button"
-                onClick={() => {
-                  setAddress(user.location?.display_name ?? "");
-                  setChangingLocation(true);
-                  setSaved(false);
-                }}
-                className="text-sm text-primary hover:underline"
-              >
-                Change location
-              </button>
-            </div>
-          )}
+      {changingLocation && (
+        <form onSubmit={handleSubmit} className="mt-2 space-y-3">
+          <input
+            type="text"
+            className={inputClass()}
+            style={inputStyle()}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            placeholder="City, region, country"
+          />
+          <ErrorBanner message={error} onDismiss={() => setError("")} />
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setChangingLocation(false)}
+              className="rounded-md border border-border px-4 py-2 text-sm font-medium text-text-primary transition hover:bg-background"
+            >
+              Cancel
+            </button>
+            <SaveButton saving={saving} />
+          </div>
+        </form>
+      )}
 
-          {changingLocation && (
-            <form onSubmit={handleSubmit} className="mt-2 space-y-3">
-              <input
-                type="text"
-                className={inputClass()}
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="City, region, country"
-              />
-              <ErrorBanner message={error} onDismiss={() => setError("")} />
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setChangingLocation(false)}
-                  className="flex-1 rounded-md border border-border py-2 font-medium text-text-primary transition hover:bg-background"
-                >
-                  Cancel
-                </button>
-                <div className="flex-1">
-                  <SaveButton saving={saving} />
-                </div>
-              </div>
-            </form>
-          )}
-        </div>
-
-        <SuccessNote show={saved && !changingLocation} />
-      </div>
-    </SectionCard>
+      <SuccessNote show={saved && !changingLocation} />
+    </div>
   );
 }
 
@@ -367,7 +408,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="space-y-6 p-6 text-text-primary">
+    <div className="mx-auto max-w-170 space-y-6 p-6 text-text-primary">
       <h1 className="text-2xl font-semibold">Settings</h1>
       <PanelInfoSection user={user} updateUser={updateUser} />
       <EnergySettingsSection user={user} updateUser={updateUser} />

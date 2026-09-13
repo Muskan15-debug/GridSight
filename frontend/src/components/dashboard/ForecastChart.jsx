@@ -28,7 +28,7 @@ export default function ForecastChart({ forecast, noForecast }) {
     if (!forecast?.hourly?.length || !width) return;
 
     const hourly = forecast.hourly;
-    const height = 320;
+    const height = 380;
     const innerWidth = width - MARGIN.left - MARGIN.right;
     const innerHeight = height - MARGIN.top - MARGIN.bottom;
 
@@ -145,6 +145,39 @@ export default function ForecastChart({ forecast, noForecast }) {
       .attr("stroke-width", 2)
       .attr("d", line);
 
+    // Peak annotation — only for a real daytime peak, not a flat nighttime zero
+    const peakEntry = parsedData.reduce(
+      (max, d) => (d.kw > max.kw ? d : max),
+      parsedData[0]
+    );
+    if (peakEntry && peakEntry.kw > 0.5) {
+      const peakX = xScale(peakEntry.timestamp);
+      const peakY = yScale(peakEntry.kw);
+
+      g.append("line")
+        .attr("x1", peakX)
+        .attr("x2", peakX)
+        .attr("y1", peakY - 20)
+        .attr("y2", peakY)
+        .attr("stroke", "#F8FAFC")
+        .attr("stroke-width", 1);
+
+      g.append("circle")
+        .attr("cx", peakX)
+        .attr("cy", peakY)
+        .attr("r", 4)
+        .attr("fill", "#F8FAFC");
+
+      g.append("text")
+        .attr("x", peakX)
+        .attr("y", peakY - 26)
+        .attr("text-anchor", "middle")
+        .attr("fill", "#F8FAFC")
+        .style("font-family", "'Inter', sans-serif")
+        .style("font-size", "11px")
+        .text(`Peak · ${peakEntry.kw.toFixed(1)} kW`);
+    }
+
     // Tooltip interaction
     const tooltip = d3.select(tooltipRef.current);
     const bisect = d3.bisector((d) => d.timestamp).left;
@@ -191,18 +224,14 @@ export default function ForecastChart({ forecast, noForecast }) {
 
   if (!forecast || noForecast) return null;
 
-  const generatedAt = forecast.generated_at
-    ? new Date(forecast.generated_at).toLocaleString()
-    : null;
-
   return (
     <div className="rounded-xl border border-border bg-card p-6">
-      <div className="mb-2 flex items-baseline justify-between">
-        <p className="text-sm text-text-secondary">72-Hour Forecast</p>
-        {generatedAt && (
-          <p className="text-xs text-text-secondary">Updated {generatedAt}</p>
-        )}
-      </div>
+      <p
+        className="mb-2 text-text-primary"
+        style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "1.1rem", fontWeight: 600 }}
+      >
+        72-Hour Forecast
+      </p>
       <div ref={containerRef} className="relative w-full">
         <svg ref={svgRef} style={{ background: "transparent" }} />
         <div

@@ -26,7 +26,7 @@ export default function HistoryChart({ dailySummary }) {
   useEffect(() => {
     if (!dailySummary?.length || !width) return;
 
-    const height = 320;
+    const height = 280;
     const innerWidth = width - MARGIN.left - MARGIN.right;
     const innerHeight = height - MARGIN.top - MARGIN.bottom;
 
@@ -40,8 +40,12 @@ export default function HistoryChart({ dailySummary }) {
     const formatDate = d3.timeFormat("%d %b");
     const dates = dailySummary.map((d) => d.date);
 
-    const x0 = d3.scaleBand().domain(dates).range([0, innerWidth]).padding(0.25);
-    const x1 = d3.scaleBand().domain(["generation", "demand"]).range([0, x0.bandwidth()]).padding(0.15);
+    const x0 = d3.scaleBand().domain(dates).range([0, innerWidth]).padding(0.4);
+    const x1 = d3.scaleBand().domain(["generation", "demand"]).range([0, x0.bandwidth()]).padding(0.1);
+
+    const MAX_BAR_WIDTH = 60;
+    const barWidth = Math.min(x1.bandwidth(), MAX_BAR_WIDTH);
+    const barInset = (x1.bandwidth() - barWidth) / 2;
 
     const maxValue = d3.max(dailySummary, (d) => Math.max(d.total_kwh, d.demand_kwh ?? 0)) || 0;
     const yScale = d3.scaleLinear().domain([0, maxValue * 1.1 || 1]).range([innerHeight, 0]).nice();
@@ -98,8 +102,8 @@ export default function HistoryChart({ dailySummary }) {
 
     dayGroups
       .append("rect")
-      .attr("x", x1("generation"))
-      .attr("width", x1.bandwidth())
+      .attr("x", x1("generation") + barInset)
+      .attr("width", barWidth)
       .attr("y", (d) => yScale(d.total_kwh))
       .attr("height", (d) => innerHeight - yScale(d.total_kwh))
       .attr("fill", AMBER)
@@ -108,8 +112,8 @@ export default function HistoryChart({ dailySummary }) {
 
     dayGroups
       .append("rect")
-      .attr("x", x1("demand"))
-      .attr("width", x1.bandwidth())
+      .attr("x", x1("demand") + barInset)
+      .attr("width", barWidth)
       .attr("y", (d) => yScale(d.demand_kwh ?? 0))
       .attr("height", (d) => innerHeight - yScale(d.demand_kwh ?? 0))
       .attr("fill", BLUE)

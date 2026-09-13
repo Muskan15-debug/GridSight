@@ -1,7 +1,43 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
+import AuthSplitLayout from "../components/auth/AuthSplitLayout";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
+
+function authInputStyle() {
+  return {
+    background: "transparent",
+    border: "none",
+    borderBottom: "1px solid #334155",
+    borderRadius: 0,
+    padding: "12px 0",
+    color: "#F8FAFC",
+    fontFamily: "'Inter', sans-serif",
+    fontSize: "0.95rem",
+    width: "100%",
+  };
+}
+
+function handleFocus(e) {
+  e.target.style.borderBottomColor = "#F59E0B";
+}
+function handleBlur(e) {
+  e.target.style.borderBottomColor = "#334155";
+}
+
+function authLabelClass() {
+  return "mb-1 block uppercase";
+}
+
+function authLabelStyle() {
+  return {
+    fontFamily: "'Inter', sans-serif",
+    color: "#6B7280",
+    fontSize: "0.75rem",
+    letterSpacing: "0.05em",
+  };
+}
 
 export default function Login() {
   const navigate = useNavigate();
@@ -31,57 +67,78 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-sm rounded-xl border border-border bg-card p-8 shadow-lg">
-        <h1 className="mb-6 text-2xl font-semibold text-text-primary">Log in to GridSight</h1>
+    <AuthSplitLayout>
+      <p style={{ fontFamily: "'Inter', sans-serif", color: "#6B7280", fontSize: "0.85rem" }}>
+        Welcome back
+      </p>
+      <h1
+        className="mb-8 mt-1"
+        style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "2rem", fontWeight: 700, color: "#F8FAFC" }}
+      >
+        Log in
+      </h1>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary" htmlFor="email">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-text-primary focus:border-primary focus:outline-none"
-            />
-          </div>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label className={authLabelClass()} style={authLabelStyle()} htmlFor="email">
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={authInputStyle()}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+          />
+        </div>
 
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary" htmlFor="password">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-text-primary focus:border-primary focus:outline-none"
-            />
-          </div>
+        <div>
+          <label className={authLabelClass()} style={authLabelStyle()} htmlFor="password">
+            Password
+          </label>
+          <input
+            id="password"
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={authInputStyle()}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+          />
+        </div>
 
-          {error && <p className="text-sm text-danger">{error}</p>}
+        {error && <p className="text-sm text-danger">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full rounded-md bg-primary py-2 font-medium text-background transition hover:opacity-90 disabled:opacity-50"
-          >
-            {submitting ? "Logging in…" : "Log in"}
-          </button>
-        </form>
+        <motion.button
+          type="submit"
+          disabled={submitting}
+          whileTap={{ scale: 0.98 }}
+          style={{
+            backgroundColor: "#F59E0B",
+            color: "#0A0A0A",
+            borderRadius: 4,
+            padding: "13px",
+            width: "100%",
+            fontFamily: "'Space Grotesk', sans-serif",
+            fontWeight: 600,
+            border: "none",
+          }}
+          className="disabled:opacity-50"
+        >
+          {submitting ? "Logging in…" : "Log in"}
+        </motion.button>
+      </form>
 
-        <p className="mt-6 text-center text-sm text-text-secondary">
-          Don't have an account?{" "}
-          <Link to="/signup" className="text-primary hover:underline">
-            Sign up
-          </Link>
-        </p>
-      </div>
-    </div>
+      <p className="mt-6" style={{ fontFamily: "'Inter', sans-serif", color: "#6B7280", fontSize: "0.85rem" }}>
+        Don't have an account?{" "}
+        <Link to="/signup" style={{ color: "#F59E0B", textDecoration: "none" }}>
+          Sign up
+        </Link>
+      </p>
+    </AuthSplitLayout>
   );
 }
